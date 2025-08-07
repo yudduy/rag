@@ -1,0 +1,62 @@
+name: chat
+
+control-plane:
+  port: 8000
+
+default-service: workflow
+
+services:
+  workflow:
+    name: Unified SOTA RAG Workflow
+    source:
+      type: local
+      name: src
+    path: src.workflow:workflow
+    python-dependencies:
+      - llama-index-llms-openai>=0.4.5
+      - llama-index-core>=0.12.45
+      - numpy>=1.24.0
+      - redis>=4.5.0
+      - fastapi>=0.100.0
+      - uvicorn>=0.23.0
+    env:
+      # Core configuration
+      USE_UNIFIED_ORCHESTRATOR: "true"
+      PERFORMANCE_PROFILE: "balanced"
+      
+      # Feature toggles
+      AGENTIC_WORKFLOW_ENABLED: "true"
+      SEMANTIC_CACHE_ENABLED: "false"  # Disabled by default (requires Redis)
+      VERIFICATION_ENABLED: "true"
+      MULTIMODAL_ENABLED: "false"      # Disabled by default (requires CLIP)
+      PERFORMANCE_OPTIMIZATION_ENABLED: "true"
+      TTS_INTEGRATION_ENABLED: "false" # Disabled by default
+      
+      # Monitoring
+      UNIFIED_MONITORING_ENABLED: "true"
+      HEALTH_CHECK_INTERVAL: "60.0"
+      ERROR_ALERTING_ENABLED: "true"
+      
+      # Cost management
+      MAX_QUERY_COST: "2.00"
+      COST_MONITORING_ENABLED: "true"
+      
+  health_monitor:
+    name: Health Monitor API
+    source:
+      type: local
+      name: src
+    path: src.health_monitor:create_monitoring_api
+    python-dependencies:
+      - fastapi>=0.100.0
+      - uvicorn>=0.23.0
+    env:
+      FASTAPI_HOST: "0.0.0.0"
+      FASTAPI_PORT: "8001"
+
+ui:
+  name: Enhanced RAG UI
+  port: 3000
+  source:
+    type: local
+    name: ui
