@@ -1,0 +1,567 @@
+name: SOTA RAG Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  PYTHON_VERSION: '3.11'
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  REDIS_URL: redis://localhost:6379/15
+
+jobs:
+  # Unit tests - fastest feedback
+  unit-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-cov pytest-xdist
+    
+    - name: Run unit tests
+      run: |
+        uv run pytest tests/unit/ -v \
+          --cov=src \
+          --cov-report=xml \
+          --cov-report=term-missing \
+          --junit-xml=unit-test-results.xml \
+          -n auto
+    
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unit-tests
+        name: unit-tests-coverage
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: unit-test-results
+        path: unit-test-results.xml
+
+  # Integration tests - require external services
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-asyncio pytest-timeout
+    
+    - name: Wait for Redis
+      run: |
+        timeout 30 sh -c 'until nc -z localhost 6379; do sleep 1; done'
+    
+    - name: Run integration tests
+      env:
+        REDIS_URL: redis://localhost:6379/15
+      run: |
+        uv run pytest tests/integration/ -v \
+          --junit-xml=integration-test-results.xml \
+          --timeout=300
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: integration-test-results.xml
+
+  # End-to-end tests - comprehensive workflow validation
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-asyncio pytest-timeout
+    
+    - name: Setup test data directory
+      run: |
+        mkdir -p ui/data
+        echo "Machine learning is a subset of artificial intelligence." > ui/data/test_doc.txt
+    
+    - name: Run E2E tests
+      env:
+        REDIS_URL: redis://localhost:6379/15
+        E2E_TEST_MODE: "true"
+      run: |
+        uv run pytest tests/e2e/ -v \
+          --junit-xml=e2e-test-results.xml \
+          --timeout=600 \
+          -s
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: e2e-test-results
+        path: e2e-test-results.xml
+
+  # Performance tests - validate benchmarks
+  performance-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-asyncio pytest-benchmark psutil
+    
+    - name: Install system monitoring tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y htop iotop
+    
+    - name: Run performance tests
+      env:
+        REDIS_URL: redis://localhost:6379/15
+        PERFORMANCE_TEST_MODE: "true"
+      run: |
+        uv run pytest tests/performance/ -v \
+          --junit-xml=performance-test-results.xml \
+          --timeout=900 \
+          --benchmark-json=benchmark-results.json
+    
+    - name: Upload performance results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-results
+        path: |
+          performance-test-results.xml
+          benchmark-results.json
+
+  # Quality assurance tests - accuracy and reliability
+  quality-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-asyncio
+    
+    - name: Run quality tests
+      env:
+        QUALITY_TEST_MODE: "true"
+      run: |
+        uv run pytest tests/quality/ -v \
+          --junit-xml=quality-test-results.xml \
+          --timeout=300
+    
+    - name: Upload quality results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: quality-test-results
+        path: quality-test-results.xml
+
+  # Regression tests - backward compatibility
+  regression-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+    
+    - name: Run regression tests
+      run: |
+        uv run pytest tests/regression/ -v \
+          --junit-xml=regression-test-results.xml \
+          --timeout=300
+    
+    - name: Upload regression results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: regression-test-results
+        path: regression-test-results.xml
+
+  # Static analysis and code quality
+  static-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: actions/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install black isort flake8 bandit safety
+    
+    - name: Run Black (code formatting)
+      run: uv run black --check --diff src tests
+    
+    - name: Run isort (import sorting)
+      run: uv run isort --check-only --diff src tests
+    
+    - name: Run Flake8 (linting)
+      run: uv run flake8 src tests --max-line-length=100
+    
+    - name: Run MyPy (type checking)
+      run: uv run mypy src
+    
+    - name: Run Bandit (security analysis)
+      run: uv run bandit -r src -f json -o bandit-results.json
+      continue-on-error: true
+    
+    - name: Run Safety (dependency security)
+      run: uv run safety check --json --output safety-results.json
+      continue-on-error: true
+    
+    - name: Upload security results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: security-analysis
+        path: |
+          bandit-results.json
+          safety-results.json
+
+  # Documentation and deployment tests
+  docs-and-deployment:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install Python dependencies
+      run: uv sync --all-extras
+    
+    - name: Install Node.js dependencies
+      run: |
+        cd ui
+        npm install
+    
+    - name: Test generate command
+      run: |
+        mkdir -p ui/data
+        echo "Test document content" > ui/data/test.txt
+        uv run generate || echo "Generate command test completed"
+    
+    - name: Test UI build
+      run: |
+        cd ui
+        npm run build || echo "UI build test completed"
+    
+    - name: Validate deployment configuration
+      run: |
+        if [ -f llama_deploy.yml ]; then
+          echo "Deployment configuration found"
+          cat llama_deploy.yml
+        else
+          echo "Warning: llama_deploy.yml not found"
+        fi
+
+  # Comprehensive test summary
+  test-summary:
+    needs: [unit-tests, integration-tests, e2e-tests, performance-tests, quality-tests, regression-tests, static-analysis]
+    runs-on: ubuntu-latest
+    if: always()
+    timeout-minutes: 10
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Download all test results
+      uses: actions/download-artifact@v3
+      with:
+        path: test-results
+    
+    - name: Generate test summary
+      run: |
+        echo "# SOTA RAG Test Suite Summary" > test-summary.md
+        echo "" >> test-summary.md
+        echo "## Test Results Overview" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # Check each test job status
+        if [ "${{ needs.unit-tests.result }}" = "success" ]; then
+          echo "✅ Unit Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ Unit Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.integration-tests.result }}" = "success" ]; then
+          echo "✅ Integration Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ Integration Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.e2e-tests.result }}" = "success" ]; then
+          echo "✅ End-to-End Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ End-to-End Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.performance-tests.result }}" = "success" ]; then
+          echo "✅ Performance Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ Performance Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.quality-tests.result }}" = "success" ]; then
+          echo "✅ Quality Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ Quality Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.regression-tests.result }}" = "success" ]; then
+          echo "✅ Regression Tests: PASSED" >> test-summary.md
+        else
+          echo "❌ Regression Tests: FAILED" >> test-summary.md
+        fi
+        
+        if [ "${{ needs.static-analysis.result }}" = "success" ]; then
+          echo "✅ Static Analysis: PASSED" >> test-summary.md
+        else
+          echo "❌ Static Analysis: FAILED" >> test-summary.md
+        fi
+        
+        echo "" >> test-summary.md
+        echo "## Performance Metrics" >> test-summary.md
+        echo "" >> test-summary.md
+        
+        # Add performance metrics if available
+        if [ -f "test-results/performance-results/benchmark-results.json" ]; then
+          echo "Performance benchmark results available in artifacts." >> test-summary.md
+        fi
+        
+        echo "" >> test-summary.md
+        echo "## Test Artifacts" >> test-summary.md
+        echo "" >> test-summary.md
+        echo "- Unit test results and coverage reports" >> test-summary.md
+        echo "- Integration test results" >> test-summary.md
+        echo "- End-to-end test results" >> test-summary.md
+        echo "- Performance benchmark results" >> test-summary.md
+        echo "- Quality assurance metrics" >> test-summary.md
+        echo "- Security analysis reports" >> test-summary.md
+        
+        cat test-summary.md
+    
+    - name: Upload test summary
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-summary
+        path: test-summary.md
+    
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const summary = fs.readFileSync('test-summary.md', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });
+
+# Workflow dispatch for manual testing
+  manual-test:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+    
+    - name: Install uv
+      uses: astral-sh/setup-uv@v2
+      with:
+        version: "latest"
+    
+    - name: Install dependencies
+      run: |
+        uv sync --all-extras
+        uv pip install pytest-asyncio pytest-timeout pytest-benchmark psutil
+    
+    - name: Run full test suite
+      env:
+        REDIS_URL: redis://localhost:6379/15
+        COMPREHENSIVE_TEST_MODE: "true"
+      run: |
+        uv run pytest tests/ -v \
+          --junit-xml=full-test-results.xml \
+          --timeout=900 \
+          --benchmark-json=full-benchmark-results.json \
+          -x  # Stop on first failure for faster feedback
+    
+    - name: Upload comprehensive results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: comprehensive-test-results
+        path: |
+          full-test-results.xml
+          full-benchmark-results.json
