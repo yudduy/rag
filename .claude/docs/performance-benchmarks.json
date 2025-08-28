@@ -1,0 +1,364 @@
+{
+  "performance_benchmarks": {
+    "metadata": {
+      "version": "1.0",
+      "created": "2024-08-28",
+      "description": "Performance benchmarks for Enhanced RAG System with UnifiedWorkflow",
+      "last_updated": "2024-08-28"
+    },
+    
+    "response_time": {
+      "description": "Response time targets for different query types",
+      "units": "seconds",
+      "simple_query": {
+        "p50": 0.5,
+        "p95": 1.0,
+        "p99": 1.5,
+        "target_avg": 0.8,
+        "examples": [
+          "What is machine learning?",
+          "Define artificial intelligence",
+          "Explain neural networks"
+        ]
+      },
+      "complex_query": {
+        "p50": 2.0,
+        "p95": 4.0,
+        "p99": 6.0,
+        "target_avg": 2.5,
+        "examples": [
+          "Compare supervised vs unsupervised learning with examples",
+          "Analyze the trade-offs between different ML algorithms",
+          "Explain the complete training pipeline for deep learning"
+        ]
+      },
+      "multimodal_query": {
+        "p50": 3.0,
+        "p95": 6.0,
+        "p99": 8.0,
+        "target_avg": 4.0,
+        "examples": [
+          "Show me a diagram of neural network architecture",
+          "Analyze this data visualization chart",
+          "Generate code from this flowchart image"
+        ]
+      }
+    },
+    
+    "cache_hit_rate": {
+      "description": "Semantic cache performance targets",
+      "units": "percentage",
+      "target_minimum": 0.30,
+      "target_optimal": 0.60,
+      "target_peak": 0.80,
+      "cold_start": 0.05,
+      "warm_system_1week": 0.45,
+      "steady_state": 0.65,
+      "specialized_domain": 0.85
+    },
+    
+    "throughput": {
+      "description": "System throughput capabilities",
+      "units": "requests_per_second",
+      "single_user": {
+        "simple_queries": 2.0,
+        "complex_queries": 1.2,
+        "multimodal_queries": 0.8
+      },
+      "concurrent_users": {
+        "5_users": 8.0,
+        "10_users": 15.0,
+        "25_users": 25.0,
+        "50_users": 35.0,
+        "100_users": 40.0
+      },
+      "peak_sustained": 45.0,
+      "burst_capacity": 60.0
+    },
+    
+    "cost": {
+      "description": "Cost targets per query type",
+      "units": "USD",
+      "max_simple_query": 0.01,
+      "max_complex_query": 0.05,
+      "max_multimodal_query": 0.08,
+      "target_avg_simple": 0.005,
+      "target_avg_complex": 0.025,
+      "target_avg_multimodal": 0.04,
+      "cache_hit_cost": 0.001,
+      "verification_overhead": 0.003
+    },
+    
+    "memory_usage": {
+      "description": "Memory usage benchmarks",
+      "units": "MB",
+      "base_system": {
+        "min": 200,
+        "typical": 350,
+        "max": 500
+      },
+      "per_concurrent_user": {
+        "additional_mb": 15,
+        "max_users_before_scaling": 50
+      },
+      "component_allocation": {
+        "unified_workflow": 150,
+        "semantic_cache": 200,
+        "verification_pipeline": 100,
+        "multimodal_clip": 300,
+        "base_llamaindex": 100
+      },
+      "peak_system_limit": 2048
+    },
+    
+    "accuracy": {
+      "description": "Accuracy targets by performance profile",
+      "units": "percentage",
+      "high_accuracy_profile": {
+        "target": 0.96,
+        "minimum_acceptable": 0.94,
+        "factual_questions": 0.98,
+        "reasoning_questions": 0.95,
+        "multimodal_questions": 0.93
+      },
+      "balanced_profile": {
+        "target": 0.90,
+        "minimum_acceptable": 0.88,
+        "factual_questions": 0.94,
+        "reasoning_questions": 0.88,
+        "multimodal_questions": 0.85
+      },
+      "cost_optimized_profile": {
+        "target": 0.85,
+        "minimum_acceptable": 0.82,
+        "factual_questions": 0.90,
+        "reasoning_questions": 0.82,
+        "multimodal_questions": 0.80
+      },
+      "speed_profile": {
+        "target": 0.80,
+        "minimum_acceptable": 0.75,
+        "factual_questions": 0.85,
+        "reasoning_questions": 0.78,
+        "multimodal_questions": 0.75
+      }
+    },
+    
+    "component_benchmarks": {
+      "unified_workflow": {
+        "query_analysis_time": {
+          "target_ms": 50,
+          "max_acceptable_ms": 150,
+          "simple_query_ms": 25,
+          "complex_query_ms": 100,
+          "multimodal_query_ms": 150
+        },
+        "plan_creation_time": {
+          "target_ms": 75,
+          "max_acceptable_ms": 200,
+          "simple_plan_ms": 30,
+          "complex_plan_ms": 120,
+          "multimodal_plan_ms": 180
+        },
+        "component_routing_overhead_ms": 25,
+        "health_check_response_ms": 100
+      },
+      
+      "semantic_cache": {
+        "lookup_time": {
+          "target_p95_ms": 5,
+          "target_avg_ms": 2,
+          "cold_cache_ms": 8,
+          "warm_cache_ms": 1
+        },
+        "embedding_generation_ms": 100,
+        "similarity_computation": {
+          "single_comparison_ms": 2,
+          "batch_100_comparisons_ms": 50,
+          "batch_1000_comparisons_ms": 200
+        },
+        "redis_roundtrip": {
+          "local_ms": 3,
+          "network_ms": 15,
+          "timeout_ms": 5000
+        }
+      },
+      
+      "verification_pipeline": {
+        "single_verification": {
+          "target_ms": 300,
+          "max_acceptable_ms": 800,
+          "graph_confidence_ms": 50,
+          "response_confidence_ms": 100,
+          "hallucination_detection_ms": 400
+        },
+        "batch_verification": {
+          "batch_size_5_total_ms": 800,
+          "batch_size_10_total_ms": 1200,
+          "batch_size_20_total_ms": 2000,
+          "optimal_batch_size": 12,
+          "throughput_per_second": 15
+        }
+      },
+      
+      "multimodal_processing": {
+        "clip_processing": {
+          "image_encoding_ms": 200,
+          "text_encoding_ms": 50,
+          "cross_modal_similarity_ms": 50
+        },
+        "image_size_impact": {
+          "256x256_ms": 100,
+          "512x512_ms": 200,
+          "1024x1024_ms": 400,
+          "2048x2048_ms": 800
+        },
+        "ocr_processing": {
+          "simple_text_ms": 200,
+          "complex_document_ms": 500,
+          "handwritten_text_ms": 800,
+          "timeout_ms": 2000
+        }
+      }
+    },
+    
+    "scalability_benchmarks": {
+      "linear_scaling": {
+        "efficiency_at_2x_load": 0.85,
+        "efficiency_at_4x_load": 0.75,
+        "efficiency_at_8x_load": 0.65,
+        "breaking_point_users": 100
+      },
+      "resource_scaling": {
+        "memory_growth_factor": 1.2,
+        "cpu_growth_factor": 1.5,
+        "network_growth_factor": 1.1,
+        "acceptable_degradation": 0.20
+      }
+    },
+    
+    "reliability_benchmarks": {
+      "availability_targets": {
+        "high_accuracy_profile": 0.995,
+        "balanced_profile": 0.999,
+        "cost_optimized_profile": 0.99,
+        "speed_profile": 0.999
+      },
+      "error_rate_thresholds": {
+        "warning": 0.01,
+        "critical": 0.05,
+        "maximum_acceptable": 0.10
+      },
+      "recovery_times": {
+        "component_restart_seconds": 30,
+        "cache_rebuild_seconds": 120,
+        "full_system_recovery_seconds": 300
+      }
+    },
+    
+    "load_test_scenarios": {
+      "progressive_load": [
+        {
+          "name": "light_load",
+          "concurrent_users": 5,
+          "duration_minutes": 10,
+          "query_rate_per_user": 0.2,
+          "expected_p95_response_time": 1.5
+        },
+        {
+          "name": "moderate_load", 
+          "concurrent_users": 25,
+          "duration_minutes": 20,
+          "query_rate_per_user": 0.3,
+          "expected_p95_response_time": 2.5
+        },
+        {
+          "name": "high_load",
+          "concurrent_users": 50,
+          "duration_minutes": 15,
+          "query_rate_per_user": 0.4,
+          "expected_p95_response_time": 4.0
+        },
+        {
+          "name": "stress_load",
+          "concurrent_users": 100,
+          "duration_minutes": 10,
+          "query_rate_per_user": 0.5,
+          "expected_degradation": true
+        }
+      ],
+      
+      "sustained_load": {
+        "concurrent_users": 25,
+        "duration_hours": 4,
+        "query_rate_per_user": 0.2,
+        "memory_leak_threshold_mb": 50,
+        "performance_degradation_threshold": 0.20
+      },
+      
+      "spike_load": {
+        "baseline_users": 10,
+        "spike_users": 75,
+        "spike_duration_minutes": 5,
+        "recovery_time_seconds": 60
+      }
+    },
+    
+    "performance_profile_targets": {
+      "high_accuracy": {
+        "response_time_p95_seconds": 5.0,
+        "accuracy_percentage": 96,
+        "verification_success_rate": 0.98,
+        "cost_per_query_usd": 0.15,
+        "memory_usage_mb": 600,
+        "throughput_reduction_acceptable": 0.40
+      },
+      
+      "balanced": {
+        "response_time_p95_seconds": 3.0,
+        "accuracy_percentage": 90,
+        "cost_per_query_usd": 0.05,
+        "memory_usage_mb": 400,
+        "cache_hit_rate": 0.40,
+        "throughput_queries_per_second": 10
+      },
+      
+      "cost_optimized": {
+        "max_cost_per_query_usd": 0.02,
+        "cache_hit_rate_minimum": 0.50,
+        "accuracy_percentage": 85,
+        "cheaper_model_usage": 0.80,
+        "batch_processing_adoption": 0.90,
+        "memory_usage_mb": 300
+      },
+      
+      "speed": {
+        "response_time_p95_seconds": 1.5,
+        "cache_hit_rate_minimum": 0.60,
+        "accuracy_percentage": 80,
+        "parallel_processing_adoption": 0.80,
+        "connection_pool_efficiency": 0.95,
+        "verification_skip_rate": 0.30
+      }
+    },
+    
+    "monitoring_thresholds": {
+      "response_time_alerts": {
+        "warning_multiplier": 1.5,
+        "critical_multiplier": 2.0,
+        "duration_minutes": 5
+      },
+      "resource_alerts": {
+        "memory_warning_mb": 1200,
+        "memory_critical_mb": 1800,
+        "cpu_warning_percent": 70,
+        "cpu_critical_percent": 85
+      },
+      "cost_alerts": {
+        "daily_budget_usd": 100,
+        "warning_threshold": 0.8,
+        "critical_threshold": 1.2
+      }
+    }
+  }
+}
