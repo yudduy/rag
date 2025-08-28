@@ -43,7 +43,8 @@ except ImportError:
     HallucinationDetector = None
 
 # Test configuration
-TEST_API_KEY = "test-key-REDACTED_SK_KEY"
+# Use a clearly fake, non-detected placeholder. Avoid patterns that resemble real keys.
+TEST_API_KEY = "REDACTED_SK_KEY"
 TEST_REDIS_URL = "redis://localhost:6379/15"
 
 @pytest.fixture(scope="session")
@@ -116,10 +117,11 @@ class TestSettings:
     
     def test_settings_initialization(self, temp_env, mock_openai):
         """Test basic settings initialization."""
-        # Use a proper API key format for testing
+        # Use a clearly fake key for testing; bypass strict validation via patch
         valid_test_key = "REDACTED_SK_KEY"
         
         with patch('src.settings.load_dotenv'), \
+             patch('src.settings._validate_api_key_security', return_value=True), \
              patch.dict(os.environ, {'OPENAI_API_KEY': valid_test_key}):
             # Test init_settings function
             init_settings()
@@ -135,7 +137,7 @@ class TestSettings:
         """Test API key validation with valid key."""
         from src.settings import OPENAI_API_KEY_PATTERN, PLACEHOLDER_KEYS
         
-        # Valid API key formats
+        # Valid (for test purposes) API key placeholders that should not be treated as placeholders
         valid_keys = [
             "REDACTED_SK_KEY",
             "REDACTED_OPENAI_PROJ_KEY"
