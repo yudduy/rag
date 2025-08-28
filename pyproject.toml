@@ -26,6 +26,9 @@ dependencies = [
     # Semantic caching
     "redis>=4.0.0",
     "numpy>=1.21.0",
+    
+    # Security and resource management
+    "psutil>=5.9.0",
 ]
 
 [project.optional-dependencies]

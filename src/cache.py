@@ -784,6 +784,102 @@ class SemanticCache:
         
         return health
 
+    def _get_secure_redis_config(self, redis_url: str) -> Dict[str, Any]:
+        """Get secure Redis connection configuration."""
+        config = {
+            "decode_responses": False,  # We handle encoding ourselves
+            "socket_connect_timeout": int(os.getenv("REDIS_CONNECT_TIMEOUT", "5")),
+            "socket_timeout": int(os.getenv("REDIS_SOCKET_TIMEOUT", "5")),
+            "retry_on_timeout": True,
+            "health_check_interval": int(os.getenv("REDIS_HEALTH_CHECK_INTERVAL", "30")),
+            "max_connections": int(os.getenv("REDIS_MAX_CONNECTIONS", "50")),
+        }
+        
+        # Parse URL to check for security features
+        parsed = urlparse(redis_url)
+        
+        # Enable SSL/TLS if specified
+        if parsed.scheme == "rediss":
+            config["ssl"] = True
+            config["ssl_check_hostname"] = True
+            
+            # SSL certificate validation
+            ssl_cert_reqs = os.getenv("REDIS_SSL_CERT_REQS", "required")
+            if ssl_cert_reqs == "required":
+                config["ssl_cert_reqs"] = ssl.CERT_REQUIRED
+            elif ssl_cert_reqs == "optional":
+                config["ssl_cert_reqs"] = ssl.CERT_OPTIONAL
+            else:
+                config["ssl_cert_reqs"] = ssl.CERT_NONE
+                
+            # Custom SSL certificate paths if provided
+            ssl_ca_certs = os.getenv("REDIS_SSL_CA_CERTS")
+            if ssl_ca_certs:
+                config["ssl_ca_certs"] = ssl_ca_certs
+                
+            ssl_cert_file = os.getenv("REDIS_SSL_CERT_FILE")
+            ssl_key_file = os.getenv("REDIS_SSL_KEY_FILE")
+            if ssl_cert_file and ssl_key_file:
+                config["ssl_certfile"] = ssl_cert_file
+                config["ssl_keyfile"] = ssl_key_file
+        
+        # Connection pooling and limits
+        config["connection_pool_kwargs"] = {
+            "max_connections": config["max_connections"],
+            "retry_on_timeout": True,
+        }
+        
+        return config
+    
+    def _sanitize_url_for_logging(self, url: str) -> str:
+        """Remove sensitive information from URL for safe logging."""
+        try:
+            parsed = urlparse(url)
+            if parsed.password:
+                # Replace password with asterisks
+                sanitized = url.replace(parsed.password, "***")
+                return sanitized
+            return url
+        except Exception:
+            # If parsing fails, just show the scheme and host
+            try:
+                parsed = urlparse(url)
+                return f"{parsed.scheme}://{parsed.hostname}:{parsed.port or 6379}"
+            except Exception:
+                return "redis://***"
+    
+    def _validate_redis_security(self) -> None:
+        """Validate Redis security configuration."""
+        if not self.redis_client:
+            return
+            
+        try:
+            # Check Redis server info for security features
+            info = self.redis_client.info()
+            
+            # Warn about potential security issues
+            redis_version = info.get("redis_version", "unknown")
+            
+            # Check for authentication
+            try:
+                # This will fail if auth is required but not provided
+                self.redis_client.config_get("requirepass")
+                logger.info("Redis authentication check passed")
+            except Exception:
+                logger.warning("Could not verify Redis authentication configuration")
+            
+            # Check for memory limits to prevent DoS
+            try:
+                memory_info = self.redis_client.info("memory")
+                max_memory = memory_info.get("maxmemory", 0)
+                if max_memory == 0:
+                    logger.warning("Redis has no memory limit set - consider setting maxmemory for security")
+            except Exception:
+                logger.debug("Could not check Redis memory configuration")
+            
+        except Exception as e:
+            logger.warning(f"Redis security validation failed: {e}")
+
 
 # Global cache instance
 _cache_instance: Optional[SemanticCache] = None
@@ -842,3 +938,26 @@ def estimate_query_cost(query: str, response_tokens: int = 2000) -> float:
     )
     
     return round(total_cost, 6)
+
+
+def get_secure_cache_config() -> Dict[str, Any]:
+    """Get secure cache configuration with validation."""
+    config = get_cache_config()
+    
+    # Validate Redis URL security
+    redis_url = config.get("redis_cache_url", "")
+    if redis_url:
+        parsed = urlparse(redis_url)
+        
+        # Warn about insecure configurations
+        if parsed.scheme == "redis" and parsed.hostname not in ("localhost", "127.0.0.1"):
+            logger.warning("Redis connection is not using TLS - consider using rediss:// for production")
+        
+        if not parsed.password and parsed.hostname not in ("localhost", "127.0.0.1"):
+            logger.warning("Redis connection may not include authentication for remote connections")
+    
+    # Set secure defaults
+    config.setdefault("cache_ttl", min(config.get("cache_ttl", 3600), 86400))  # Max 24 hours
+    config.setdefault("max_cache_size", min(config.get("max_cache_size", 10000), 100000))  # Max 100k entries
+    
+    return config

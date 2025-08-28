@@ -1,6 +1,8 @@
 import os
 import logging
+import re
 from pathlib import Path
+from typing import Optional
 from dotenv import load_dotenv
 
 from llama_index.core import Settings
@@ -15,6 +17,17 @@ except ImportError:
 from llama_index.llms.openai import OpenAI
 
 logger = logging.getLogger(__name__)
+
+# Security constants
+OPENAI_API_KEY_PATTERN = re.compile(r'^sk-[A-Za-z0-9]{20}T3BlbkFJ[A-Za-z0-9]{20}$|^sk-proj-[A-Za-z0-9_-]{20,}$')
+PLACEHOLDER_KEYS = {
+    'your_api_key_here', 
+    'your_openai_api_key_here', 
+    'REDACTED_SK_KEY', 
+    'sk-example',
+    'replace_with_your_key',
+    'INSERT_API_KEY_HERE'
+}
 
 
 def init_settings():
@@ -34,9 +47,13 @@ def init_settings():
                 load_dotenv(alt_env_path, override=True)
                 logger.info(f"Loaded environment from: {alt_env_path}")
     
-    # Validate required environment variables
-    if os.getenv("OPENAI_API_KEY") is None or os.getenv("OPENAI_API_KEY") == "your_openai_api_key_here":
-        raise RuntimeError("OPENAI_API_KEY is missing or not configured in environment variables. Please set it in src/.env")
+    # Validate required environment variables with enhanced security
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not _validate_api_key_security(api_key):
+        raise RuntimeError(
+            "OPENAI_API_KEY validation failed. Please ensure you have set a valid OpenAI API key in src/.env. "
+            "API key must follow OpenAI format and cannot be a placeholder value."
+        )
     
     # Model configuration with cost optimization
     main_model = os.getenv("MODEL", "gpt-4o")
@@ -64,18 +81,19 @@ def init_settings():
     Settings.chunk_size = int(os.getenv("CHUNK_SIZE", "512"))
     Settings.chunk_overlap = int(os.getenv("CHUNK_OVERLAP", "50"))
     
-    # Validate configuration parameters
+    # Validate configuration parameters including security
     _validate_configuration()
     _validate_agentic_configuration()
     _validate_cache_configuration()
     _validate_verification_configuration()
     _validate_multimodal_configuration()
+    _validate_environment_security()
     
     # Configure logging level
     log_level = os.getenv("LOG_LEVEL", "INFO")
     logging.basicConfig(level=getattr(logging, log_level.upper()))
     
-    logger.info("Settings initialized successfully with enhanced RAG and agentic configuration")
+    logger.info("Settings initialized successfully with enhanced RAG, agentic, and security configuration")
 
 
 def _validate_configuration():
@@ -399,6 +417,83 @@ def _validate_multimodal_configuration():
     logger.info(f"OCR enabled={ocr_enabled}, Language={ocr_language}")
     logger.info(f"TTS engine={tts_engine}, Voice speed={voice_speed}wpm")
     logger.info("Multimodal configuration validation completed")
+
+
+def _validate_api_key_security(api_key: Optional[str]) -> bool:
+    """
+    Validate OpenAI API key format and security.
+    
+    Args:
+        api_key: The API key to validate
+        
+    Returns:
+        True if valid and secure, False otherwise
+    """
+    if not api_key:
+        logger.error("API key is missing")
+        return False
+    
+    # Check for placeholder values (case-insensitive)
+    if api_key.lower() in {key.lower() for key in PLACEHOLDER_KEYS}:
+        logger.error("API key appears to be a placeholder value")
+        return False
+    
+    # Check minimum length (OpenAI keys are typically 51+ characters)
+    if len(api_key) < 20:
+        logger.error("API key is too short to be valid")
+        return False
+    
+    # Check for obviously invalid patterns
+    if api_key.startswith(('test-', 'demo-', 'example-', 'fake-')):
+        logger.error("API key appears to be a test/demo key")
+        return False
+    
+    # Validate OpenAI API key format (basic structure check)
+    if not (api_key.startswith('sk-') and len(api_key) >= 20):
+        logger.error("API key does not match OpenAI format")
+        return False
+    
+    # Additional security checks
+    if api_key.count('-') < 1:  # Should have at least one dash
+        logger.error("API key format appears invalid")
+        return False
+    
+    # Check for suspicious patterns
+    suspicious_patterns = ['localhost', '127.0.0.1', 'example.com', 'test.com']
+    if any(pattern in api_key.lower() for pattern in suspicious_patterns):
+        logger.error("API key contains suspicious patterns")
+        return False
+    
+    logger.info("API key validation passed")
+    return True
+
+
+def _validate_environment_security() -> None:
+    """Validate environment configuration for security best practices."""
+    
+    # Check for debug mode in production-like environments
+    debug_mode = os.getenv("DEBUG", "false").lower() == "true"
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    
+    if debug_mode and environment in ("production", "prod", "staging"):
+        logger.warning("DEBUG mode is enabled in production-like environment")
+    
+    # Validate log level security
+    log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+    if log_level == "DEBUG" and environment in ("production", "prod"):
+        logger.warning("DEBUG logging enabled in production environment - may expose sensitive information")
+    
+    # Check for insecure Redis configurations
+    redis_url = os.getenv("REDIS_CACHE_URL", "")
+    if redis_url and not redis_url.startswith(("rediss://", "redis://localhost")):
+        if "password" not in redis_url.lower() and "auth" not in redis_url.lower():
+            logger.warning("Redis URL may not include authentication - consider using authentication for security")
+    
+    # Check for secure SSL/TLS configurations
+    if redis_url and redis_url.startswith("redis://") and not redis_url.startswith("redis://localhost"):
+        logger.warning("Redis connection is not using TLS - consider using rediss:// for secure connections")
+    
+    logger.info("Environment security validation completed")
 
 
 def get_multimodal_config() -> dict:

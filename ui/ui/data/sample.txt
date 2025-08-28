@@ -1,3 +1,0 @@
-Enhanced RAG System
-
-This is a test document for the Enhanced RAG system with agentic workflows, semantic caching, and hallucination detection.

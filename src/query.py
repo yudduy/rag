@@ -24,6 +24,8 @@ from src.multimodal import (
     is_multimodal_enabled,
     is_cross_modal_search_enabled
 )
+from src.security import validate_user_query, get_security_validator
+from src.resource_manager import get_resource_manager
 
 logger = logging.getLogger(__name__)
 
@@ -729,6 +731,7 @@ def get_query_engine_tool(
     name: Optional[str] = None,
     description: Optional[str] = None,
     enable_cache: bool = True,
+    enable_security: bool = True,
     **kwargs: Any,
 ) -> QueryEngineTool:
     """
@@ -777,12 +780,112 @@ def get_query_engine_tool(
         # Add verification capabilities if enabled
         verified_tool = create_verified_query_tool(tool)
         
+        # Add security validation if enabled
+        if enable_security:
+            secured_tool = _create_secure_query_tool(verified_tool)
+            logger.info(f"Successfully created secure query engine tool: {name}")
+            return secured_tool
+        
         logger.info(f"Successfully created query engine tool: {name}")
         return verified_tool
         
     except Exception as e:
         logger.error(f"Failed to create query engine tool: {str(e)}")
         raise RuntimeError(f"Query engine tool creation failed: {str(e)}") from e
+
+
+def _create_secure_query_tool(tool: QueryEngineTool) -> QueryEngineTool:
+    """Create a secure wrapper for the query engine tool with input validation."""
+    
+    class SecureQueryEngine:
+        """Secure wrapper for query engine with validation."""
+        
+        def __init__(self, original_engine):
+            self.original_engine = original_engine
+            self.security_validator = get_security_validator()
+            self.resource_manager = get_resource_manager()
+        
+        def query(self, query_str: str, **kwargs) -> Any:
+            """Execute query with security validation and resource management."""
+            start_time = time.time()
+            
+            try:
+                # Security validation
+                is_valid, sanitized_query, security_metadata = self.security_validator.validate_query(query_str)
+                
+                if not is_valid:
+                    violation_msg = "; ".join(security_metadata.get("violations", ["Query validation failed"]))
+                    logger.warning(f"Query rejected due to security violations: {violation_msg}")
+                    raise ValueError(f"Query rejected for security reasons: {violation_msg}")
+                
+                # Resource validation
+                memory_valid, memory_msg = self.resource_manager.validate_memory_usage()
+                if not memory_valid:
+                    raise RuntimeError(f"Resource limit exceeded: {memory_msg}")
+                
+                # Execute with timeout and resource monitoring
+                with self.resource_manager.execute_with_timeout():
+                    result = self.original_engine.query(sanitized_query, **kwargs)
+                
+                # Log successful query
+                processing_time = time.time() - start_time
+                logger.info(f"Secure query executed successfully in {processing_time:.2f}s")
+                
+                return result
+                
+            except Exception as e:
+                processing_time = time.time() - start_time
+                logger.error(f"Secure query failed after {processing_time:.2f}s: {e}")
+                raise
+        
+        async def aquery(self, query_str: str, **kwargs) -> Any:
+            """Execute async query with security validation."""
+            start_time = time.time()
+            
+            try:
+                # Security validation
+                is_valid, sanitized_query, security_metadata = self.security_validator.validate_query(query_str)
+                
+                if not is_valid:
+                    violation_msg = "; ".join(security_metadata.get("violations", ["Query validation failed"]))
+                    logger.warning(f"Async query rejected due to security violations: {violation_msg}")
+                    raise ValueError(f"Query rejected for security reasons: {violation_msg}")
+                
+                # Resource validation
+                memory_valid, memory_msg = self.resource_manager.validate_memory_usage()
+                if not memory_valid:
+                    raise RuntimeError(f"Resource limit exceeded: {memory_msg}")
+                
+                # Execute with async timeout
+                coro = self.original_engine.aquery(sanitized_query, **kwargs)
+                result = await self.resource_manager.execute_async_with_timeout(coro)
+                
+                # Log successful query
+                processing_time = time.time() - start_time
+                logger.info(f"Secure async query executed successfully in {processing_time:.2f}s")
+                
+                return result
+                
+            except Exception as e:
+                processing_time = time.time() - start_time
+                logger.error(f"Secure async query failed after {processing_time:.2f}s: {e}")
+                raise
+        
+        def __getattr__(self, name):
+            """Delegate other attributes to the original engine."""
+            return getattr(self.original_engine, name)
+    
+    # Create secure engine wrapper
+    secure_engine = SecureQueryEngine(tool.query_engine)
+    
+    # Create new tool with secure engine
+    secure_tool = QueryEngineTool(
+        query_engine=secure_engine,
+        metadata=tool.metadata
+    )
+    
+    logger.info("Created secure query engine tool wrapper")
+    return secure_tool
 
 
 def _apply_routing_strategy(
