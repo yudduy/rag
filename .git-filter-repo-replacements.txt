@@ -1,0 +1,6 @@
+# Redact OpenAI-like keys (correct syntax uses ==> separator)
+regex:(sk-[A-Za-z0-9]{20}T3BlbkFJ[A-Za-z0-9]{20})==>REDACTED_OPENAI_KEY
+regex:(sk-proj-[A-Za-z0-9_-]{8,})==>REDACTED_OPENAI_PROJ_KEY
+regex:(sk-[A-Za-z0-9_-]{8,})==>REDACTED_SK_KEY
+regex:(test-key-sk-[A-Za-z0-9_-]{4,})==>REDACTED_TEST_KEY
+regex:(OPENAI_API_KEY=sk-[^\n\r]+)==>OPENAI_API_KEY=REDACTED
