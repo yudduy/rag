@@ -519,3 +519,40 @@ def get_multimodal_config() -> dict:
         "multimodal_cache_enabled": os.getenv("MULTIMODAL_CACHE_ENABLED", "true").lower() == "true",
         "clip_model_cache_dir": os.getenv("CLIP_MODEL_CACHE_DIR", "./models/clip"),
     }
+
+
+def load_settings() -> dict:
+    """Load all settings and configuration as a comprehensive dictionary.
+    
+    Returns:
+        Dictionary containing all configuration settings for the system
+    """
+    # Initialize settings first to load environment variables
+    init_settings()
+    
+    # Compile all configuration into a single dictionary
+    settings = {
+        "rag": get_rag_config(),
+        "agentic": get_agentic_config(),
+        "cache": get_cache_config(),
+        "verification": get_verification_config(),
+        "multimodal": get_multimodal_config(),
+        "environment": {
+            "debug": os.getenv("DEBUG", "false").lower() == "true",
+            "log_level": os.getenv("LOG_LEVEL", "INFO"),
+            "environment": os.getenv("ENVIRONMENT", "development"),
+            "enable_profiling": os.getenv("ENABLE_PROFILING", "false").lower() == "true",
+        },
+        "security": {
+            "api_key_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "api_key_valid": _validate_api_key_security(os.getenv("OPENAI_API_KEY")),
+        },
+        # Add specific settings for verification testing
+        "verification_enabled": os.getenv("VERIFICATION_ENABLED", "true").lower() == "true",
+        "verification_threshold": float(os.getenv("VERIFICATION_THRESHOLD", "0.8")),
+        "verification_model": os.getenv("VERIFICATION_MODEL", "gpt-4o-mini"),
+        "ensemble_verification": os.getenv("ENSEMBLE_VERIFICATION", "true").lower() == "true",
+        "debate_augmentation_enabled": os.getenv("DEBATE_AUGMENTATION_ENABLED", "false").lower() == "true",
+    }
+    
+    return settings
