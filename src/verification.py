@@ -1,14 +1,7 @@
-"""
-Hallucination Detection and Multi-Level Confidence System for RAG
+"""Response verification and confidence scoring for RAG systems.
 
-This module implements comprehensive hallucination detection infrastructure including:
-- Multi-level confidence calculation (graph-level, node-level, response-level)
-- Post-generation verification framework
-- Consistency checking mechanisms
-- Confidence-based response filtering
-- Ensemble verification for critical queries
-- GPT-4o-mini verification integration
-- Monitoring and alerting for low-confidence responses
+Detects potential hallucinations by analyzing retrieved documents and generated
+responses. Uses GPT-4o-mini for cost-effective verification of factual accuracy.
 """
 
 import asyncio
@@ -32,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 class ConfidenceLevel(Enum):
-    """Confidence levels for response reliability."""
+    """How confident we are in a response's accuracy."""
     VERY_LOW = "very_low"      # < 0.4
     LOW = "low"                # 0.4 - 0.6
     MEDIUM = "medium"          # 0.6 - 0.8
@@ -41,7 +34,7 @@ class ConfidenceLevel(Enum):
 
 
 class VerificationResult(Enum):
-    """Result of verification process."""
+    """Outcome of response verification."""
     VERIFIED = "verified"
     REJECTED = "rejected"
     UNCERTAIN = "uncertain"
@@ -50,7 +43,7 @@ class VerificationResult(Enum):
 
 @dataclass
 class NodeConfidence:
-    """Confidence metrics for individual retrieved nodes."""
+    """Quality scores for a single retrieved document."""
     node_id: str
     similarity_score: float
     semantic_coherence: float
@@ -59,7 +52,7 @@ class NodeConfidence:
     overall_confidence: float = field(init=False)
     
     def __post_init__(self):
-        """Calculate overall confidence from component scores."""
+        """Combine individual scores into overall confidence."""
         weights = {
             'similarity': 0.3,
             'coherence': 0.25,

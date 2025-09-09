@@ -1,8 +1,7 @@
-"""
-Agentic workflow components for SOTA RAG enhancement.
+"""Query analysis and routing for complex RAG workflows.
 
-This module provides intelligent query routing, decomposition, and execution
-strategies to optimize retrieval performance and accuracy.
+Handles query classification, decomposition of complex questions into
+sub-queries, and intelligent routing to appropriate processing strategies.
 """
 
 import os
@@ -22,18 +21,18 @@ logger = logging.getLogger(__name__)
 
 
 class QueryType(Enum):
-    """Query classification types for routing decisions."""
-    FACTUAL = "factual"          # Direct fact retrieval
-    SEMANTIC = "semantic"        # Complex semantic understanding
-    COMPARATIVE = "comparative"  # Comparison between concepts
-    PROCEDURAL = "procedural"    # How-to or step-by-step
-    ANALYTICAL = "analytical"    # Analysis or reasoning required
-    MULTIFACETED = "multifaceted"  # Complex multi-part questions
+    """Different types of user queries we can identify."""
+    FACTUAL = "factual"          # Simple facts: "What is X?"
+    SEMANTIC = "semantic"        # Meaning-based queries
+    COMPARATIVE = "comparative"  # "Compare X and Y"
+    PROCEDURAL = "procedural"    # "How do I...?"
+    ANALYTICAL = "analytical"    # "Why does X happen?"
+    MULTIFACETED = "multifaceted"  # Multiple questions in one
 
 
 @dataclass
 class QueryClassification:
-    """Result of query classification analysis."""
+    """What we learned about a user's query."""
     query_type: QueryType
     confidence: float
     complexity_score: float
@@ -44,10 +43,10 @@ class QueryClassification:
 
 @dataclass
 class SubQuery:
-    """Individual sub-query from decomposition."""
+    """One part of a complex query that was broken down."""
     text: str
     priority: int
-    depends_on: List[int]  # Dependencies on other sub-queries
+    depends_on: List[int]  # Which other sub-queries this needs
     query_type: QueryType
     context_requirements: List[str] = None  # Required context from dependencies
     estimated_cost: float = 0.0  # Estimated processing cost

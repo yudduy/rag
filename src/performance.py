@@ -1,17 +1,7 @@
-"""
-Performance Optimization Module for SOTA RAG System
+"""Performance optimization tools for RAG systems.
 
-This module implements advanced performance optimizations including:
-- Multi-level query similarity detection (lexical, semantic, intent-based)
-- Dynamic similarity thresholds based on query complexity
-- Cross-modal similarity for multimodal queries
-- Intelligent cache key generation with query normalization
-- Batch processing for embedding operations
-- Connection pooling optimization
-- Memory usage optimization
-- Smart cache warming strategies
-- Priority-based eviction
-- Cross-system cache coherence
+Provides advanced similarity detection, batch processing, intelligent caching,
+and memory management to improve response times and reduce costs.
 """
 
 import os
@@ -49,21 +39,17 @@ logger = logging.getLogger(__name__)
 
 
 class SimilarityLevel(Enum):
-    """Levels of similarity detection."""
-    LEXICAL = "lexical"          # Exact/near-exact word matching
-    SEMANTIC = "semantic"        # Meaning-based similarity
-    INTENT = "intent"            # Intent/purpose similarity
-    STRUCTURAL = "structural"    # Query structure similarity
-    CROSS_MODAL = "cross_modal"  # Cross-modal similarity
+    """Different ways to compare queries for similarity."""
+    LEXICAL = "lexical"          # Word-level matching
+    SEMANTIC = "semantic"        # Meaning similarity
+    INTENT = "intent"            # Same goal/purpose
+    STRUCTURAL = "structural"    # Similar question structure
+    CROSS_MODAL = "cross_modal"  # Text/image similarity
 
 
 @dataclass
 class QuerySignature:
-    """
-    Enhanced query signature for multi-level similarity detection.
-    
-    Captures multiple aspects of a query for comprehensive similarity matching.
-    """
+    """Comprehensive representation of a query for similarity matching."""
     original_query: str
     normalized_query: str
     query_type: QueryType
@@ -77,7 +63,7 @@ class QuerySignature:
     timestamp: float = field(default_factory=time.time)
     
     def to_cache_key(self) -> str:
-        """Generate a unique cache key from the signature."""
+        """Create a hash key for caching this query."""
         # Combine multiple elements for uniqueness
         key_elements = [
             self.normalized_query[:50],

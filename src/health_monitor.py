@@ -1,8 +1,7 @@
-"""
-Health Monitoring and API Endpoints for SOTA RAG System
+"""System health monitoring and metrics collection.
 
-This module provides comprehensive health monitoring, metrics collection,
-and API endpoints for system management and observability.
+Tracks component health, collects performance metrics, generates alerts,
+and provides API endpoints for monitoring the RAG system.
 """
 
 import asyncio
@@ -33,7 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class AlertSeverity(Enum):
-    """Alert severity levels."""
+    """How urgent an alert is."""
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -42,7 +41,7 @@ class AlertSeverity(Enum):
 
 @dataclass
 class HealthAlert:
-    """Represents a system health alert."""
+    """A system alert about a potential issue."""
     id: str
     timestamp: float
     severity: AlertSeverity
