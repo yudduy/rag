@@ -58,7 +58,7 @@ class SubQuery:
 
 
 class QueryClassifier:
-    """Intelligent query classification system for routing decisions."""
+    """Query classification system for routing decisions."""
     
     def __init__(self, model: Optional[str] = None):
         self.model = model or os.getenv("ROUTING_MODEL", "gpt-3.5-turbo")
@@ -267,7 +267,7 @@ Example: "factual, 0.85"
 
 
 class QueryDecomposer:
-    """Intelligent query decomposition for complex multi-part questions."""
+    """Query decomposition for complex multi-part questions."""
     
     def __init__(self, model: Optional[str] = None):
         self.model = model or os.getenv("DECOMPOSITION_MODEL", "gpt-3.5-turbo")

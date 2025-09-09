@@ -54,7 +54,7 @@ class HealthAlert:
 
 @dataclass
 class SystemMetrics:
-    """Comprehensive system metrics."""
+    """System metrics."""
     timestamp: float
     uptime: float
     total_queries: int
@@ -73,7 +73,7 @@ class SystemMetrics:
 
 class HealthMonitor:
     """
-    Comprehensive health monitoring system for SOTA RAG components.
+    Health monitoring system for SOTA RAG components.
     
     Provides:
     - Real-time health checks for all components

@@ -77,7 +77,7 @@ class ProcessingPlan:
 
 class UnifiedWorkflow(Workflow):
     """
-    Master workflow orchestrator that intelligently coordinates all SOTA components.
+    Master workflow orchestrator that coordinates all SOTA components.
     
     This workflow:
     1. Analyzes incoming queries to determine characteristics and requirements

@@ -1,15 +1,15 @@
-# RAG System
+# SOTA RAG System
 
-A production-ready Retrieval-Augmented Generation system built with [LlamaIndex](https://www.llamaindex.ai/). This system provides intelligent query processing, semantic caching, response verification, and multimodal support for building reliable AI applications.
+A production-ready Retrieval-Augmented Generation system built with [LlamaIndex](https://www.llamaindex.ai/). This system provides query processing, semantic caching, response verification, and multimodal support for building AI applications.
 
 ## Features
 
-- **Intelligent Query Processing** - Automatic query analysis and routing with agentic workflow support
+- **Query Processing** - Automatic query analysis and routing with agentic workflow support
 - **Semantic Caching** - Redis-based caching with similarity matching to reduce API costs
 - **Response Verification** - Multi-level confidence scoring and hallucination detection
 - **Performance Optimization** - Four configurable performance profiles for different use cases
 - **Multimodal Support** - Text and image processing with CLIP integration
-- **Enterprise Security** - Input validation, rate limiting, and comprehensive monitoring
+- **Security** - Input validation, rate limiting, and monitoring
 - **Production Monitoring** - Health checks, metrics collection, and alerting
 - **Scalable Deployment** - LlamaDeploy integration with auto-scaling support
 
@@ -141,7 +141,7 @@ curl 'http://localhost:4501/health'
 curl 'http://localhost:4501/metrics'
 ```
 
-## Advanced Features
+## Additional Features
 
 ### Semantic Caching
 

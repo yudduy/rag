@@ -1,6 +1,6 @@
 """Performance optimization tools for RAG systems.
 
-Provides advanced similarity detection, batch processing, intelligent caching,
+Provides similarity detection, batch processing, caching,
 and memory management to improve response times and reduce costs.
 """
 
@@ -129,12 +129,10 @@ class PerformanceMetrics:
             )
 
 
-class AdvancedSimilarityDetector:
-    """
-    Advanced multi-level similarity detection system.
+class SimilarityDetector:
+    """Multi-level similarity detection system.
     
-    Implements sophisticated similarity detection across multiple dimensions:
-    - Lexical similarity (word-level matching)
+    Implements similarity detection across multiple dimensions:
     - Semantic similarity (meaning-based)
     - Intent similarity (purpose/goal matching)
     - Structural similarity (query pattern matching)
@@ -774,12 +772,8 @@ class BatchEmbeddingProcessor:
         }
 
 
-class IntelligentCacheManager:
-    """
-    Intelligent cache management system with advanced features.
-    
-    Implements:
-    - Priority-based eviction
+class CacheManager:
+    """Cache management system with priority-based eviction.
     - Adaptive cache sizing
     - Smart cache warming
     - Cross-system cache coherence
@@ -1262,7 +1256,7 @@ class PerformanceOptimizer:
         self.enable_all = enable_all_optimizations
         
         # Initialize components
-        self.similarity_detector = AdvancedSimilarityDetector(
+        self.similarity_detector = SimilarityDetector(
             enable_all_levels=enable_all_optimizations
         )
         
@@ -1270,7 +1264,7 @@ class PerformanceOptimizer:
             batch_size=int(os.getenv("EMBEDDING_BATCH_SIZE", "10"))
         )
         
-        self.cache_manager = IntelligentCacheManager(
+        self.cache_manager = CacheManager(
             semantic_cache=self.semantic_cache,
             max_memory_mb=float(os.getenv("MAX_CACHE_MEMORY_MB", "512")),
             enable_warming=enable_all_optimizations
