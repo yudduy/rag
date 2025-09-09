@@ -1,4 +1,4 @@
-name: SOTA RAG Test Suite
+name: RAG Test Suite
 
 on:
   push:
@@ -15,7 +15,7 @@ env:
   REDIS_URL: redis://localhost:6379/15
 
 jobs:
-  # Unit tests - fastest feedback
+  # Unit tests - fast feedback loop
   unit-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -61,7 +61,7 @@ jobs:
         name: unit-test-results
         path: unit-test-results.xml
 
-  # Integration tests - require external services
+  # Integration tests - test with Redis and external services
   integration-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -114,7 +114,7 @@ jobs:
         name: integration-test-results
         path: integration-test-results.xml
 
-  # End-to-end tests - comprehensive workflow validation
+  # End-to-end tests - full workflow testing
   e2e-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -170,7 +170,7 @@ jobs:
         name: e2e-test-results
         path: e2e-test-results.xml
 
-  # Performance tests - validate benchmarks
+  # Performance tests - benchmark validation
   performance-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 90
@@ -228,7 +228,7 @@ jobs:
           performance-test-results.xml
           benchmark-results.json
 
-  # Quality assurance tests - accuracy and reliability
+  # Quality tests - accuracy and reliability checks
   quality-tests:
     runs-on: ubuntu-latest
     timeout-minutes: 60
@@ -421,7 +421,7 @@ jobs:
     
     - name: Generate test summary
       run: |
-        echo "# SOTA RAG Test Suite Summary" > test-summary.md
+        echo "# Enhanced RAG Test Suite Summary" > test-summary.md
         echo "" >> test-summary.md
         echo "## Test Results Overview" >> test-summary.md
         echo "" >> test-summary.md
@@ -511,7 +511,7 @@ jobs:
             body: summary
           });
 
-# Workflow dispatch for manual testing
+# Manual test execution
   manual-test:
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
