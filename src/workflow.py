@@ -8,7 +8,7 @@ import logging
 from dotenv import load_dotenv
 from pathlib import Path
 
-from src.simple_workflow import create_simple_workflow
+from src.rag_workflow import create_simple_workflow
 from src.settings import init_settings
 
 logger = logging.getLogger(__name__)
