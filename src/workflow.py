@@ -8,7 +8,7 @@ import logging
 from dotenv import load_dotenv
 from pathlib import Path
 
-from src.rag_workflow import create_workflow as create_rag_workflow
+from src.simple_workflow import create_simple_workflow
 from src.settings import init_settings
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ def create_workflow():
         init_settings()
         
         # Create the workflow
-        workflow = create_rag_workflow()
+        workflow = create_simple_workflow()
         logger.info("SOTA RAG workflow created successfully")
         
         return workflow
