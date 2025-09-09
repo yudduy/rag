@@ -1,16 +1,8 @@
 {
-  "image": "mcr.microsoft.com/vscode/devcontainers/typescript-node:dev-20-bullseye",
+  "image": "mcr.microsoft.com/devcontainers/python:3.11-bullseye",
   "features": {
-    "ghcr.io/devcontainers-community/npm-features/typescript:1": {},
-    "ghcr.io/devcontainers-extra/features/turborepo-npm:1": {},
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.11",
-      "toolsToInstall": [
-        "flake8",
-        "black",
-        "mypy",
-        "poetry"
-      ]
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "18"
     }
   },
   "customizations": {
@@ -21,27 +13,39 @@
     },
     "vscode": {
       "extensions": [
-        "ms-vscode.typescript-language-features",
-        "esbenp.prettier-vscode",
         "ms-python.python",
         "ms-python.black-formatter",
-        "ms-python.vscode-flake8",
-        "ms-python.vscode-pylance"
+        "ms-python.flake8",
+        "ms-python.mypy-type-checker",
+        "ms-python.isort",
+        "charliermarsh.ruff",
+        "ms-vscode.typescript-language-features",
+        "esbenp.prettier-vscode"
       ],
       "settings": {
-        "python.formatting.provider": "black",
-        "python.languageServer": "Pylance",
-        "python.analysis.typeCheckingMode": "basic"
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.formatting.provider": "none",
+        "[python]": {
+          "editor.defaultFormatter": "ms-python.black-formatter",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": true
+          }
+        },
+        "python.linting.enabled": true,
+        "python.linting.flake8Enabled": true,
+        "mypy.dmypyExecutable": "/usr/local/bin/dmypy"
       }
     }
   },
   "containerEnv": {
-    "POETRY_VIRTUALENVS_CREATE": "false",
-    "PYTHONPATH": "${PYTHONPATH}:${workspaceFolder}"
+    "PYTHONPATH": "${workspaceFolder}"
   },
   "forwardPorts": [
     3000,
-    8000
+    4501,
+    8000,
+    8001
   ],
-  "postCreateCommand": "poetry install"
+  "postCreateCommand": "pip install uv && uv sync"
 }
