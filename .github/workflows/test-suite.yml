@@ -1,4 +1,4 @@
-name: RAG Test Suite
+name: SOTA RAG Test Suite
 
 on:
   push:
@@ -421,7 +421,7 @@ jobs:
     
     - name: Generate test summary
       run: |
-        echo "# Enhanced RAG Test Suite Summary" > test-summary.md
+        echo "# SOTA RAG Test Suite Summary" > test-summary.md
         echo "" >> test-summary.md
         echo "## Test Results Overview" >> test-summary.md
         echo "" >> test-summary.md
