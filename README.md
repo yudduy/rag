@@ -1,4 +1,4 @@
-# Enhanced RAG System
+# RAG System
 
 A production-ready Retrieval-Augmented Generation system built with [LlamaIndex](https://www.llamaindex.ai/). This system provides intelligent query processing, semantic caching, response verification, and multimodal support for building reliable AI applications.
 

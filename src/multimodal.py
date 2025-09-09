@@ -1,8 +1,7 @@
-"""
-Multimodal embedding module for CLIP integration and cross-modal retrieval.
+"""Image and text processing using CLIP for multimodal search.
 
-This module provides lightweight multimodal capabilities for the RAG system,
-enabling text-image shared embedding space and cross-modal search functionality.
+Handles image embeddings, OCR text extraction, and cross-modal similarity
+to enable searching across both text documents and images.
 """
 
 import os
@@ -43,11 +42,10 @@ logger = logging.getLogger(__name__)
 
 
 class MultimodalEmbedding(BaseEmbedding):
-    """
-    CLIP-based multimodal embedding model for text and images.
+    """CLIP embedding model that works with both text and images.
     
-    Provides unified embedding space for text and images, enabling cross-modal
-    retrieval and semantic search across different modalities.
+    Creates embeddings that can be compared across text and images,
+    so you can search for images using text queries and vice versa.
     """
     
     def __init__(

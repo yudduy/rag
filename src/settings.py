@@ -31,9 +31,9 @@ PLACEHOLDER_KEYS = {
 
 
 def init_settings():
-    """Initialize LlamaIndex settings with comprehensive configuration validation."""
+    """Set up LlamaIndex with OpenAI models and validate configuration."""
     
-    # Ensure environment variables are loaded from the correct location
+    # Load environment variables if not already set
     if not os.getenv("OPENAI_API_KEY"):
         project_root = Path(__file__).parent.parent.absolute()
         env_path = project_root / "src" / ".env"
@@ -47,7 +47,7 @@ def init_settings():
                 load_dotenv(alt_env_path, override=True)
                 logger.info(f"Loaded environment from: {alt_env_path}")
     
-    # Validate required environment variables with enhanced security
+    # Check that we have a valid OpenAI API key
     api_key = os.getenv("OPENAI_API_KEY")
     if not _validate_api_key_security(api_key):
         raise RuntimeError(

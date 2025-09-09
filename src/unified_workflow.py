@@ -1,8 +1,7 @@
-"""
-Unified Workflow Orchestrator for SOTA RAG System
+"""Main workflow that coordinates all RAG components.
 
-This module provides the master workflow orchestrator that intelligently coordinates
-all SOTA components based on query characteristics, configuration, and system health.
+Analyzes queries and decides which features to use (caching, verification,
+multimodal processing, etc.) based on query complexity and system configuration.
 """
 
 import asyncio
@@ -32,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 class QueryComplexity(Enum):
-    """Query complexity levels."""
+    """How difficult a query is to process."""
     SIMPLE = "simple"
     MODERATE = "moderate"
     COMPLEX = "complex"
@@ -41,7 +40,7 @@ class QueryComplexity(Enum):
 
 @dataclass
 class QueryCharacteristics:
-    """Analysis of query characteristics for intelligent routing."""
+    """Information about a query to help route it properly."""
     original_query: str
     complexity: QueryComplexity = QueryComplexity.SIMPLE
     complexity_score: float = 0.0

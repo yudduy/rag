@@ -26,19 +26,10 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class CacheEntry:
-    """
-    Represents a cache entry with metadata for semantic similarity matching.
+    """Cache entry storing query, response, and similarity metadata.
     
-    Attributes:
-        query: The original query string
-        query_embedding: Normalized embedding vector for similarity matching
-        response: The cached response object
-        nodes: Retrieved nodes with scores
-        timestamp: When the entry was cached
-        access_count: Number of times this entry was accessed
-        last_accessed: Last access timestamp
-        similarity_threshold: Threshold used when this was cached
-        cost_saved: Estimated cost saved by using this cache entry
+    Used for semantic caching where similar queries can reuse cached responses
+    based on embedding similarity rather than exact text matching.
     """
     query: str
     query_embedding: List[float]
@@ -65,16 +56,11 @@ class CacheStats:
 
 
 class SemanticCache:
-    """
-    Redis-based semantic caching system with embedding similarity matching.
+    """Redis-based cache that matches queries by semantic similarity.
     
-    Features:
-    - Embedding-based cache keys with cosine similarity matching
-    - LRU eviction with TTL management
-    - Performance monitoring and statistics
-    - Graceful fallback when Redis is unavailable
-    - Cost optimization tracking
-    - Cache warming capabilities
+    Instead of exact string matching, this cache uses embedding similarity
+    to find cached responses for semantically similar queries. Falls back
+    to in-memory caching if Redis is unavailable.
     """
     
     def __init__(self, config: Optional[Dict[str, Any]] = None):
