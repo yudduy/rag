@@ -385,6 +385,11 @@ class CachedQueryEngine:
                         f"Cache HIT: Query served from cache in {cache_time:.3f}s "
                         f"(similarity: {similarity_score:.3f})"
                     )
+                    try:
+                        from src.metrics import observe_query
+                        observe_query(cache_time, from_cache=True)
+                    except Exception:
+                        pass
                     
                     return cached_response
                     
@@ -413,6 +418,11 @@ class CachedQueryEngine:
                     logger.warning(f"Failed to cache response: {e}")
             
             logger.info(f"Query executed in {query_time:.3f}s")
+            try:
+                from src.metrics import observe_query
+                observe_query(query_time, from_cache=False)
+            except Exception:
+                pass
             return response
             
         except Exception as e:
