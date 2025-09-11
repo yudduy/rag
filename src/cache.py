@@ -196,7 +196,7 @@ class SemanticCache:
             logger.error(f"Similarity computation failed: {e}")
             return 0.0
     
-    def _find_similar_cache_entry(self, query_embedding: List[float], use_advanced_similarity: bool = True) -> Optional[Tuple[str, float]]:
+    def _find_similar_cache_entry(self, query: str, query_embedding: List[float], use_advanced_similarity: bool = True) -> Optional[Tuple[str, float]]:
         """
         Find the most similar cache entry using embedding similarity.
         
@@ -261,8 +261,8 @@ class SemanticCache:
                                         
                                         # Compute multi-level similarity
                                         similarity, _ = similarity_detector.compute_similarity(
-                                            query_embedding,  # Current query
-                                            original_query    # Cached query
+                                            query,            # Current query text
+                                            original_query    # Cached query text
                                         )
                                 else:
                                     # Standard similarity computation
@@ -280,7 +280,7 @@ class SemanticCache:
                 for cache_key, entry in self._fallback_cache.items():
                     if use_advanced_similarity and similarity_detector:
                         similarity, _ = similarity_detector.compute_similarity(
-                            query_embedding,
+                            query,
                             entry.query
                         )
                     else:
@@ -384,7 +384,7 @@ class SemanticCache:
                 return None
             
             # Find similar entry
-            match_result = self._find_similar_cache_entry(query_embedding)
+            match_result = self._find_similar_cache_entry(query, query_embedding)
             if not match_result:
                 self._record_miss()
                 return None
@@ -699,7 +699,7 @@ class SemanticCache:
                 embedding = self._generate_embedding(query)
                 if embedding:
                     # Check if similar query already cached
-                    if not self._find_similar_cache_entry(embedding):
+                    if not self._find_similar_cache_entry(query, embedding):
                         # Could implement actual query execution here
                         # For now, just log the warming intent
                         logger.info(f"Cache warming candidate: {query}")
