@@ -11,7 +11,7 @@ services:
     source:
       type: local
       name: src
-    path: src.workflow:workflow
+    path: src.workflow:create_workflow
     python-dependencies:
       - llama-index-llms-openai>=0.4.5
       - llama-index-core>=0.12.45
@@ -40,23 +40,4 @@ services:
       # Cost management
       MAX_QUERY_COST: "2.00"
       COST_MONITORING_ENABLED: "true"
-      
-  health_monitor:
-    name: Health Monitor API
-    source:
-      type: local
-      name: src
-    path: src.health_monitor:create_monitoring_api
-    python-dependencies:
-      - fastapi>=0.100.0
-      - uvicorn>=0.23.0
-    env:
-      FASTAPI_HOST: "0.0.0.0"
-      FASTAPI_PORT: "8001"
 
-ui:
-  name: Enhanced RAG UI
-  port: 3000
-  source:
-    type: local
-    name: ui
