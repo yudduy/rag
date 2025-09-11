@@ -47,17 +47,17 @@ A production-ready Retrieval-Augmented Generation system built with [LlamaIndex]
 
 2. **Configure Environment**
    ```bash
-   # Copy the example environment file
-   cp src/.env.example src/.env
+   # Copy the example environment file to project root
+   cp .env.example .env
    
-   # Edit src/.env and add your OpenAI API key
+   # Edit .env and add your OpenAI API key
    OPENAI_API_KEY=your_openai_api_key_here
    ```
 
 3. **Prepare Your Documents**
    ```bash
    # Add your documents to the data directory
-   cp your_documents.pdf ui/data/
+   cp your_documents.pdf web/data/
    
    # Generate the search index
    uv run generate
@@ -76,7 +76,7 @@ A production-ready Retrieval-Augmented Generation system built with [LlamaIndex]
    ```
 
 3. **Access the System**
-   - Web Interface: http://localhost:4501/deployments/chat/ui
+   - Web Interface: run `npm run dev` in `web/` and open http://localhost:3000
    - API Documentation: http://localhost:4501/docs
    - Health Check: http://localhost:4501/health
 
@@ -95,7 +95,7 @@ PERFORMANCE_PROFILE=balanced  # high_accuracy|balanced|cost_optimized|speed
 
 # Caching (optional, but recommended)
 SEMANTIC_CACHE_ENABLED=true
-REDIS_CACHE_URL=redis://localhost:6379
+REDIS_URL=redis://localhost:6379
 
 # Features (optional)
 VERIFICATION_ENABLED=true        # Response verification
@@ -148,9 +148,9 @@ curl 'http://localhost:4501/metrics'
 Reduce API costs by caching similar queries:
 
 ```bash
-# Enable caching in src/.env
+# Enable caching in .env
 SEMANTIC_CACHE_ENABLED=true
-REDIS_CACHE_URL=redis://localhost:6379
+REDIS_URL=redis://localhost:6379
 CACHE_SIMILARITY_THRESHOLD=0.97
 ```
 
@@ -161,7 +161,7 @@ Expected cost reduction: 30-50% for typical workloads.
 Multi-level confidence scoring to detect potential hallucinations:
 
 ```bash
-# Enable verification in src/.env
+# Enable verification in .env
 VERIFICATION_ENABLED=true
 VERIFICATION_THRESHOLD=0.8
 VERIFICATION_MODEL=gpt-4o-mini
@@ -175,7 +175,7 @@ Process images alongside text queries:
 # Install multimodal dependencies
 uv sync --extra multimodal
 
-# Enable in src/.env
+# Enable in .env
 MULTIMODAL_ENABLED=true
 IMAGE_INDEXING_ENABLED=true
 ```
@@ -188,7 +188,7 @@ Add voice output to responses:
 # Install TTS dependencies
 uv sync --extra tts
 
-# Enable in src/.env
+# Enable in .env
 TTS_INTEGRATION_ENABLED=true
 ```
 
@@ -286,7 +286,7 @@ The system provides comprehensive monitoring:
 
 **"Index not found"**
 - Run `uv run generate` after adding documents
-- Check that documents exist in `ui/data/`
+- Check that documents exist in `web/data/`
 
 **Slow responses**
 - Switch to `speed` profile for faster responses

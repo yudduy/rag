@@ -98,7 +98,7 @@ class SemanticCache:
             return
             
         try:
-            redis_url = self.config["redis_cache_url"]
+            redis_url = self.config["redis_url"]
             self.redis_client = redis.from_url(
                 redis_url,
                 decode_responses=False,  # We'll handle encoding ourselves
@@ -931,7 +931,7 @@ def get_secure_cache_config() -> Dict[str, Any]:
     config = get_cache_config()
     
     # Validate Redis URL security
-    redis_url = config.get("redis_cache_url", "")
+    redis_url = config.get("redis_url", "")
     if redis_url:
         parsed = urlparse(redis_url)
         
