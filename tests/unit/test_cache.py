@@ -4,8 +4,11 @@ import types
 import pytest
 
 
-class _StubEmbedModel:
-    def get_text_embedding(self, text: str):
+from llama_index.core.base.embeddings.base import BaseEmbedding
+
+
+class _StubEmbedModel(BaseEmbedding):
+    def _get_text_embedding(self, text: str):
         # Simple deterministic embedding stub (length 8)
         vec = [0.0] * 8
         for i, ch in enumerate(text.encode("utf-8")):
@@ -13,6 +16,13 @@ class _StubEmbedModel:
         # L2 normalize
         norm = sum(v * v for v in vec) ** 0.5 or 1.0
         return [v / norm for v in vec]
+
+    # Also satisfy query path
+    def _get_query_embedding(self, query: str):
+        return self._get_text_embedding(query)
+
+    async def _aget_query_embedding(self, query: str):
+        return self._get_text_embedding(query)
 
 
 @pytest.fixture(autouse=True)
@@ -22,7 +32,7 @@ def setup_env(monkeypatch):
     # Enable semantic cache (default true, keep explicit)
     monkeypatch.setenv("SEMANTIC_CACHE_ENABLED", "true")
 
-    # Patch LlamaIndex global Settings.embed_model to stub
+    # Patch LlamaIndex global Settings.embed_model with BaseEmbedding subclass
     from llama_index.core import Settings
 
     original_embed = Settings.embed_model
