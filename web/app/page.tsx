@@ -1,11 +1,12 @@
 'use client';
 
 import { useChat } from '@ai-sdk/react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function Page() {
   const { messages, input, handleInputChange, handleSubmit, isLoading } = useChat({ api: '/api/chat' });
-  const [question, setQuestion] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement | null>(null);
 
   return (
     <main>
@@ -33,6 +34,32 @@ export default function Page() {
           Send
         </button>
       </form>
+
+      <section style={{ marginTop: 24 }}>
+        <h3>Ingest documents</h3>
+        <input ref={fileRef} type="file" multiple />
+        <button
+          disabled={uploading}
+          style={{ marginLeft: 8, padding: '6px 10px' }}
+          onClick={async () => {
+            if (!fileRef.current?.files?.length) return;
+            setUploading(true);
+            try {
+              const form = new FormData();
+              for (const f of Array.from(fileRef.current.files)) form.append('files', f);
+              const resp = await fetch(process.env.NEXT_PUBLIC_RAG_API_INGEST || 'http://localhost:4501/ingest', {
+                method: 'POST',
+                body: form,
+              });
+              if (!resp.ok) alert('Ingest failed');
+            } finally {
+              setUploading(false);
+            }
+          }}
+        >
+          {uploading ? 'Uploading…' : 'Upload & Index'}
+        </button>
+      </section>
     </main>
   );
 }
