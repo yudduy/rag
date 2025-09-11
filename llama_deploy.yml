@@ -40,4 +40,7 @@ services:
       # Cost management
       MAX_QUERY_COST: "2.00"
       COST_MONITORING_ENABLED: "true"
+    http:
+      additional_apps:
+        - path: src.http_server:app
 
