@@ -34,7 +34,7 @@ def generate_index():
 
         # Configuration for sentence windowing
         window_size = int(os.environ.get("SENTENCE_WINDOW_SIZE", "3"))
-        data_dir = os.environ.get("DATA_DIR", "ui/data")
+        data_dir = os.environ.get("DATA_DIR", "web/data")
         
         logger.info(f"Creating new index with sentence window size: {window_size}")
         logger.info(f"Reading documents from: {data_dir}")
