@@ -189,7 +189,9 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
           >
             {isUploading ? (
               <div className="flex flex-col items-center gap-2">
-                <LoaderIcon size={24} />
+                <div className="animate-spin">
+                  <LoaderIcon size={24} />
+                </div>
                 <p>Uploading and indexing...</p>
               </div>
             ) : (
@@ -228,7 +230,9 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
             
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <LoaderIcon size={24} />
+                <div className="animate-spin">
+                  <LoaderIcon size={24} />
+                </div>
                 <span className="ml-2">Loading documents...</span>
               </div>
             ) : error ? (

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { createDocument, updateDocumentChunkCount } from "@/db/queries";
+import { createDocument, updateDocumentChunkCount, getUser } from "@/db/queries";
 import { DocumentProcessor } from "@/lib/document-processor";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
@@ -17,6 +17,13 @@ export async function POST(request: Request) {
   try {
     // Check authentication
     const session = await auth();
+    console.log("Upload session:", { 
+      sessionExists: !!session, 
+      userExists: !!session?.user, 
+      userId: session?.user?.id,
+      userEmail: session?.user?.email 
+    });
+    
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -76,16 +83,46 @@ export async function POST(request: Request) {
       );
     }
 
+    // Verify user exists in database and get the correct user ID
+    let actualUserId: string;
+    try {
+      const userByEmail = await getUser(session.user.email || "");
+      console.log("User lookup:", { 
+        sessionUserId: session.user.id,
+        sessionUserEmail: session.user.email,
+        dbUserFound: userByEmail.length > 0,
+        dbUserId: userByEmail[0]?.id,
+        dbUserEmail: userByEmail[0]?.email
+      });
+      
+      if (userByEmail.length === 0) {
+        return NextResponse.json(
+          { error: "User not found in database. Please log out and log back in." },
+          { status: 401 }
+        );
+      }
+      
+      // Use the actual user ID from the database instead of the session
+      actualUserId = userByEmail[0].id;
+    } catch (userError) {
+      console.error("User verification error:", userError);
+      return NextResponse.json(
+        { error: "Failed to verify user" },
+        { status: 500 }
+      );
+    }
+
     // Save to database
     let savedDocument;
     try {
+      console.log("Attempting to create document with userId:", actualUserId);
       savedDocument = await createDocument({
         filename: processedDoc.filename,
         originalName: processedDoc.originalName,
         fileType: processedDoc.fileType,
         fileSize: processedDoc.fileSize,
         content: processedDoc.content,
-        userId: session.user.id,
+        userId: actualUserId,
       });
     } catch (dbError) {
       console.error("Database error:", dbError);
@@ -103,7 +140,7 @@ export async function POST(request: Request) {
         processedDoc.filename,
         processedDoc.content,
         processedDoc.fileType,
-        session.user.id
+        actualUserId
       );
 
       if (!indexingResult.success) {
