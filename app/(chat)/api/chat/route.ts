@@ -18,7 +18,29 @@ export async function POST(request: Request) {
   const session = await auth();
 
   if (!session) {
-    return new Response("Unauthorized", { status: 401 });
+    return new Response(JSON.stringify({
+      error: "Authentication required",
+      errorDetails: {
+        type: "auth",
+        title: "Authentication Required",
+        message: "Please log in to use the chat feature",
+        details: {
+          code: "AUTH_REQUIRED",
+          timestamp: new Date().toISOString(),
+          endpoint: "/api/chat"
+        },
+        suggestions: [
+          "Please log in to your account",
+          "If you're already logged in, try refreshing the page",
+          "Check if your session has expired"
+        ],
+        canRetry: false,
+        canReport: false
+      }
+    }), { 
+      status: 401,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   const coreMessages = convertToCoreMessages(messages).filter(

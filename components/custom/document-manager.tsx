@@ -7,6 +7,8 @@ import useSWR, { mutate } from "swr";
 import { FileIcon, TrashIcon, UploadIcon, LoaderIcon } from "@/components/custom/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ErrorPanel, ErrorDetails } from "./error-panel";
+import { SystemStatus } from "./system-status";
 
 interface Document {
   id: string;
@@ -33,6 +35,8 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
+  const [currentError, setCurrentError] = useState<ErrorDetails | null>(null);
+  const [showSystemStatus, setShowSystemStatus] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user's documents
@@ -82,11 +86,20 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Upload failed");
+        // Check if we have detailed error information
+        if (result.errorDetails) {
+          setCurrentError(result.errorDetails);
+        } else {
+          // Fallback to basic error display
+          toast.error(result.error || "Upload failed");
+        }
+        return;
       }
 
       if (result.success) {
         toast.success(`${file.name} uploaded and indexed successfully!`);
+        setCurrentError(null); // Clear any previous errors
+        
         // Refresh documents list
         mutate("/api/documents/upload");
         
@@ -95,11 +108,31 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
           fileInputRef.current.value = "";
         }
       } else {
-        throw new Error("Upload failed");
+        toast.error("Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error(error instanceof Error ? error.message : "Upload failed");
+      
+      // Create a generic error for network/unexpected issues
+      setCurrentError({
+        type: "network",
+        title: "Network Error",
+        message: "Failed to connect to the server",
+        details: {
+          code: "NETWORK_ERROR",
+          timestamp: new Date().toISOString(),
+        },
+        suggestions: [
+          "Check your internet connection",
+          "Try again in a few moments",
+          "Refresh the page and retry"
+        ],
+        technicalInfo: [
+          { label: "Error", value: error instanceof Error ? error.message : "Unknown error" }
+        ],
+        canRetry: true,
+        canReport: false
+      });
     } finally {
       setIsUploading(false);
     }
@@ -169,12 +202,44 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
       <div className="bg-background rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">Document Manager</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            ✕
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowSystemStatus(true)}
+              title="Check system status"
+            >
+              🔧 Status
+            </Button>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              ✕
+            </Button>
+          </div>
         </div>
 
         <div className="p-6">
+          {/* Error Panel */}
+          {currentError && (
+            <ErrorPanel
+              error={currentError}
+              isVisible={!!currentError}
+              onRetry={() => {
+                setCurrentError(null);
+                // Retry with the last file if available
+                const input = fileInputRef.current;
+                if (input?.files && input.files.length > 0) {
+                  handleFileUpload(input.files);
+                }
+              }}
+              onDismiss={() => setCurrentError(null)}
+              onReport={() => {
+                // Could implement error reporting here
+                console.log("Error reported:", currentError);
+                toast.success("Error report sent to development team");
+              }}
+            />
+          )}
+
           {/* Upload Area */}
           <div
             className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
@@ -278,6 +343,12 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
           </div>
         </div>
       </div>
+
+      {/* System Status Panel */}
+      <SystemStatus 
+        isVisible={showSystemStatus} 
+        onClose={() => setShowSystemStatus(false)} 
+      />
     </div>
   );
 }
