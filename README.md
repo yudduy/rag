@@ -73,32 +73,53 @@ npm install
 1. **Get API Key**: Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. **Create Key**: Generate a new API key for Gemini
 
-### Step 3: Database Setup
+### Step 3: Vercel Postgres Setup
 
-#### Option A: Local PostgreSQL
+Based on the [Vercel Postgres documentation](https://vercel.com/docs/postgres), set up your database through the Vercel Marketplace:
+
+#### 3.1 Create Vercel Postgres Database
+
+1. **Login to Vercel**: Go to [vercel.com](https://vercel.com) and sign in
+2. **Navigate to Storage**: In your project dashboard, click the **Storage** tab
+3. **Create Database**: 
+   - Click **Create Database**
+   - Select **Postgres** from the marketplace
+   - Choose a database name (e.g., `rag-chatbot-db`)
+   - Select your preferred region (closest to your users)
+   - Click **Create**
+
+#### 3.2 Connect Database to Project
+
+1. **Connect Project**: After database creation, click **Connect Project**
+2. **Select Project**: Choose your RAG chatbot project from the dropdown
+3. **Connect**: Click **Connect** - Vercel automatically injects environment variables
+4. **Verify Connection**: Check that `POSTGRES_URL` appears in your project's environment variables
+
+#### 3.3 Pull Environment Variables Locally
+
 ```bash
-# Install PostgreSQL (macOS)
-brew install postgresql
-brew services start postgresql
+# Install Vercel CLI (if not already installed)
+npm install -g vercel
 
-# Create database
-createdb rag_chatbot
+# Login to Vercel
+vercel login
+
+# Link your local project (if not already linked)
+vercel link
+
+# Pull environment variables to local development
+vercel env pull .env.local
 ```
 
-#### Option B: Cloud Database (Recommended)
-- **Vercel Postgres**: Free tier with 60 hours compute/month
-- **Supabase**: Free tier with 500MB storage
-- **Neon**: Free tier with 3GB storage
+This will automatically create/update your `.env.local` file with the Vercel Postgres connection string.
 
 ### Step 4: Environment Configuration
 
-Create `.env.local` in the project root:
+After pulling Vercel environment variables, your `.env.local` should contain the Vercel Postgres connection. Add the remaining required variables:
 
 ```bash
-# Database (Required)
-POSTGRES_URL="postgresql://username:password@localhost:5432/rag_chatbot"
-# OR for cloud databases:
-# POSTGRES_URL="your-cloud-database-connection-string"
+# Database (Automatically added by Vercel)
+POSTGRES_URL="vercel-postgres-connection-string-from-vercel-env-pull"
 
 # Authentication (Required)
 AUTH_SECRET="your-random-secret-key-min-32-chars"
@@ -124,12 +145,14 @@ RAG_QUERY_EXPANSION=false
 ### Step 5: Database Migration
 
 ```bash
-# Run database migrations
+# Run database migrations to set up tables in Vercel Postgres
 npm run db:migrate
 
-# Optional: Push schema changes
+# Optional: Push schema changes directly to Vercel Postgres
 npm run db:push
 ```
+
+**Note**: The database operations will run against your Vercel Postgres instance using the `POSTGRES_URL` environment variable.
 
 ### Step 6: Test the RAG System
 
@@ -223,7 +246,7 @@ Document A suggests... while Document B indicates...
 | **Pinecone** | 2GB storage (~300K vectors) | Perfect for <50 documents |
 | **HuggingFace** | 1000 requests/hour | Sufficient for personal use |
 | **Gemini** | 15 requests/minute | Great for chat interactions |
-| **Vercel Postgres** | 60 hours/month | Adequate for development |
+| **Vercel Postgres** | 60 compute hours/month, 256MB storage | Ideal for development and small projects |
 
 ### Performance Tuning
 
@@ -339,9 +362,9 @@ npm run rag:test     # Test embeddings + Pinecone
 ### Vercel Deployment (Recommended)
 
 1. **Connect Repository**: Import your GitHub repo to Vercel
-2. **Environment Variables**: Add all `.env.local` variables to Vercel
-3. **Database**: Use Vercel Postgres or external provider
-4. **Deploy**: Automatic deployment on push
+2. **Database Integration**: Vercel Postgres is already connected and environment variables are automatically injected
+3. **Additional Environment Variables**: Add the remaining variables (API keys, secrets) to Vercel project settings
+4. **Deploy**: Automatic deployment on push with seamless database connectivity
 
 ```bash
 # Optional: Deploy via CLI
@@ -368,13 +391,13 @@ CMD ["npm", "start"]
 ### Environment Variables Checklist
 
 Production deployment requires:
-- ✅ `POSTGRES_URL` - Database connection
-- ✅ `AUTH_SECRET` - Session encryption
-- ✅ `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API
-- ✅ `PINECONE_API_KEY` - Vector database
-- ✅ `PINECONE_INDEX_NAME` - Index name
-- ⚠️ `HUGGINGFACE_API_KEY` - Optional but recommended
-- ⚠️ `NODE_ENV=production` - Production mode
+- ✅ `POSTGRES_URL` - Automatically injected by Vercel Postgres
+- ✅ `AUTH_SECRET` - Session encryption (add manually)
+- ✅ `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API (add manually)
+- ✅ `PINECONE_API_KEY` - Vector database (add manually)
+- ✅ `PINECONE_INDEX_NAME` - Index name (add manually)
+- ⚠️ `HUGGINGFACE_API_KEY` - Optional but recommended (add manually)
+- ⚠️ `NODE_ENV=production` - Production mode (automatically set)
 
 ## 🔧 Troubleshooting
 
@@ -399,11 +422,16 @@ HUGGINGFACE_API_KEY=your-token
 
 #### "Database connection error"
 ```bash
-# Check connection string
+# Verify Vercel Postgres connection
+vercel env pull .env.local
+
+# Check if POSTGRES_URL is properly set
+echo $POSTGRES_URL
+
+# Test database migration
 npm run db:push
 
-# Test connection
-psql $POSTGRES_URL -c "SELECT 1"
+# If still failing, check Vercel dashboard for database status
 ```
 
 #### "Document upload fails"
@@ -435,10 +463,14 @@ psql $POSTGRES_URL -c "SELECT 1"
 # Check all services
 npm run rag:test
 
-# Database health
+# Verify Vercel Postgres connection
+vercel env pull .env.local
 npm run db:push --dry-run
 
-# Check logs
+# Check Vercel deployment logs
+vercel logs
+
+# Check local development logs
 tail -f .next/server.log
 ```
 
@@ -446,6 +478,7 @@ tail -f .next/server.log
 - **Pinecone**: Monitor vector count in dashboard
 - **HuggingFace**: Check request usage
 - **Gemini**: Monitor API usage in Google Cloud Console
+- **Vercel Postgres**: Monitor compute hours and storage in Vercel dashboard
 
 ## 📊 Usage Analytics
 
@@ -462,7 +495,7 @@ With default settings, you can handle:
 When you exceed free tiers:
 1. **Pinecone**: $70/month for 20GB storage
 2. **HuggingFace**: $9/month for Inference Endpoints
-3. **Database**: $20/month for managed PostgreSQL
+3. **Vercel Postgres**: $20/month for Pro plan with more compute hours and storage
 
 ## 🤝 Contributing
 
