@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { createDocument, updateDocumentChunkCount, getUser } from "@/db/queries";
+import { createDocument, updateDocumentChunkCount } from "@/db/queries";
 import { DocumentProcessor } from "@/lib/document-processor";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
@@ -14,11 +14,35 @@ const ALLOWED_TYPES = [
 ];
 
 export async function POST(request: Request) {
+  const startTime = Date.now();
   try {
     // Check authentication
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ 
+        error: "Authentication required",
+        errorDetails: {
+          type: "auth",
+          title: "Authentication Required",
+          message: "You must be logged in to upload documents",
+          details: {
+            code: "AUTH_REQUIRED",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload"
+          },
+          suggestions: [
+            "Please log in to your account",
+            "If you're already logged in, try refreshing the page",
+            "Clear your browser cookies and log in again"
+          ],
+          technicalInfo: [
+            { label: "Session Status", value: session ? "Exists but incomplete" : "Not found" },
+            { label: "User ID", value: session?.user?.id || "Missing" }
+          ],
+          canRetry: true,
+          canReport: false
+        }
+      }, { status: 401 });
     }
 
     // Parse form data
@@ -26,32 +50,112 @@ export async function POST(request: Request) {
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ 
+        error: "No file provided",
+        errorDetails: {
+          type: "validation",
+          title: "No File Selected",
+          message: "Please select a file to upload",
+          details: {
+            code: "NO_FILE",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload"
+          },
+          suggestions: [
+            "Click 'Choose Files' or drag and drop a file",
+            "Make sure the file is properly selected before uploading"
+          ],
+          canRetry: true,
+          canReport: false
+        }
+      }, { status: 400 });
     }
 
-    // Validate file
+    // Validate file size
     if (file.size > MAX_FILE_SIZE) {
-      return NextResponse.json(
-        { error: `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit` },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        error: "File too large",
+        errorDetails: {
+          type: "validation",
+          title: "File Size Too Large", 
+          message: `File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the ${MAX_FILE_SIZE / 1024 / 1024}MB limit`,
+          details: {
+            code: "FILE_TOO_LARGE",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload"
+          },
+          suggestions: [
+            "Try compressing your document",
+            "Split large documents into smaller files",
+            "Use a PDF compression tool to reduce file size"
+          ],
+          technicalInfo: [
+            { label: "File Size", value: `${(file.size / 1024 / 1024).toFixed(2)} MB` },
+            { label: "Maximum Allowed", value: `${MAX_FILE_SIZE / 1024 / 1024} MB` },
+            { label: "File Name", value: file.name }
+          ],
+          canRetry: true,
+          canReport: false
+        }
+      }, { status: 400 });
     }
 
+    // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
-      return NextResponse.json(
-        { 
-          error: "Unsupported file type. Supported types: TXT, MD, PDF, DOCX",
-          supportedTypes: ALLOWED_TYPES
-        },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        error: "Unsupported file type",
+        errorDetails: {
+          type: "validation",
+          title: "Unsupported File Type",
+          message: `File type "${file.type}" is not supported. Please use TXT, MD, PDF, or DOCX files.`,
+          details: {
+            code: "UNSUPPORTED_FILE_TYPE",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload"
+          },
+          suggestions: [
+            "Convert your file to PDF format",
+            "Save as a .txt or .md file",
+            "Use Microsoft Word to save as .docx format"
+          ],
+          technicalInfo: [
+            { label: "Detected Type", value: file.type || "Unknown" },
+            { label: "File Name", value: file.name },
+            { label: "Supported Types", value: ALLOWED_TYPES.join(", ") }
+          ],
+          canRetry: true,
+          canReport: false
+        }
+      }, { status: 400 });
     }
 
+    // Validate file extension matches MIME type
     if (!DocumentProcessor.isValidFileType(file.name, file.type)) {
-      return NextResponse.json(
-        { error: "File extension doesn't match MIME type" },
-        { status: 400 }
-      );
+      return NextResponse.json({
+        error: "File extension mismatch",
+        errorDetails: {
+          type: "validation",
+          title: "File Extension Mismatch",
+          message: "The file extension doesn't match the detected file type",
+          details: {
+            code: "EXTENSION_MISMATCH",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload"
+          },
+          suggestions: [
+            "Rename the file with the correct extension",
+            "Re-save the file in the correct format",
+            "Check if the file was corrupted during transfer"
+          ],
+          technicalInfo: [
+            { label: "File Name", value: file.name },
+            { label: "Detected MIME Type", value: file.type },
+            { label: "Expected Extension", value: "Should match MIME type" }
+          ],
+          canRetry: true,
+          canReport: true
+        }
+      }, { status: 400 });
     }
 
     // Process file
@@ -67,13 +171,37 @@ export async function POST(request: Request) {
       );
     } catch (processingError) {
       console.error("Document processing error:", processingError);
-      return NextResponse.json(
-        { 
-          error: "Failed to process document",
-          details: processingError instanceof Error ? processingError.message : "Unknown error"
-        },
-        { status: 422 }
-      );
+      const errorMessage = processingError instanceof Error ? processingError.message : "Unknown error";
+      
+      return NextResponse.json({
+        error: "Document processing failed",
+        errorDetails: {
+          type: "upload",
+          title: "Document Processing Failed",
+          message: `Failed to process your ${file.type} document: ${errorMessage}`,
+          details: {
+            code: "PROCESSING_FAILED",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload",
+            userId: session.user.id
+          },
+          suggestions: [
+            "Try re-saving the document in the same format",
+            "Check if the document is corrupted or password-protected",
+            "For PDFs: ensure the file is not secured or encrypted",
+            "For Word docs: try saving as a newer .docx format"
+          ],
+          technicalInfo: [
+            { label: "File Name", value: file.name },
+            { label: "File Type", value: file.type },
+            { label: "File Size", value: `${(file.size / 1024).toFixed(1)} KB` },
+            { label: "Processing Time", value: `${Date.now() - startTime}ms` },
+            { label: "Error Details", value: errorMessage }
+          ],
+          canRetry: true,
+          canReport: true
+        }
+      }, { status: 422 });
     }
 
     // Save to database
@@ -89,10 +217,36 @@ export async function POST(request: Request) {
       });
     } catch (dbError) {
       console.error("Database error:", dbError);
-      return NextResponse.json(
-        { error: "Failed to save document to database" },
-        { status: 500 }
-      );
+      const errorMessage = dbError instanceof Error ? dbError.message : "Unknown database error";
+      
+      return NextResponse.json({
+        error: "Database save failed",
+        errorDetails: {
+          type: "database",
+          title: "Failed to Save Document",
+          message: "The document was processed successfully but couldn't be saved to the database",
+          details: {
+            code: "DB_SAVE_FAILED",
+            timestamp: new Date().toISOString(),
+            endpoint: "/api/documents/upload",
+            userId: session.user.id
+          },
+          suggestions: [
+            "Try uploading the document again",
+            "Check if you have sufficient storage space",
+            "Contact support if the problem persists"
+          ],
+          technicalInfo: [
+            { label: "File Name", value: processedDoc.filename },
+            { label: "User ID", value: session.user.id },
+            { label: "Content Length", value: `${processedDoc.content.length} characters` },
+            { label: "Processing Time", value: `${Date.now() - startTime}ms` },
+            { label: "Database Error", value: errorMessage }
+          ],
+          canRetry: true,
+          canReport: true
+        }
+      }, { status: 500 });
     }
 
     // Index document with RAG
@@ -119,6 +273,7 @@ export async function POST(request: Request) {
     } catch (ragError) {
       console.error("RAG indexing error:", ragError);
       // Continue without failing - document is still saved
+      // But we'll include this in the response for transparency
     }
 
     // Return success response
@@ -143,14 +298,37 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    console.error("Document upload error:", error);
-    return NextResponse.json(
-      { 
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error"
-      },
-      { status: 500 }
-    );
+    console.error("Unexpected error during document upload:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    
+    return NextResponse.json({
+      error: "Unexpected upload error",
+      errorDetails: {
+        type: "system",
+        title: "Unexpected System Error",
+        message: "An unexpected error occurred while processing your upload",
+        details: {
+          code: "SYSTEM_ERROR",
+          timestamp: new Date().toISOString(),
+          endpoint: "/api/documents/upload",
+          sessionId: "unknown"
+        },
+        suggestions: [
+          "Try uploading the document again",
+          "Wait a few minutes and retry",
+          "Check your internet connection",
+          "Contact support if the problem persists"
+        ],
+        technicalInfo: [
+          { label: "Error Type", value: error?.constructor?.name || "Unknown" },
+          { label: "Error Message", value: errorMessage },
+          { label: "Processing Time", value: `${Date.now() - startTime}ms` },
+          { label: "Timestamp", value: new Date().toISOString() }
+        ],
+        canRetry: true,
+        canReport: true
+      }
+    }, { status: 500 });
   }
 }
 
