@@ -1,0 +1,12 @@
+const CHUNK_PUBLIC_PATH = "server/app/(chat)/api/files/upload/route.js";
+const runtime = require("../../../../../chunks/[turbopack]_runtime.js");
+runtime.loadChunk("server/chunks/node_modules_next_33b342._.js");
+runtime.loadChunk("server/chunks/node_modules_@auth_core_82f32d._.js");
+runtime.loadChunk("server/chunks/node_modules_jose_dist_node_esm_663ef4._.js");
+runtime.loadChunk("server/chunks/node_modules_postgres_src_4a361f._.js");
+runtime.loadChunk("server/chunks/node_modules_drizzle-orm_d74dd0._.js");
+runtime.loadChunk("server/chunks/node_modules_zod_v3_6a452f._.js");
+runtime.loadChunk("server/chunks/node_modules_undici_1ed0b2._.js");
+runtime.loadChunk("server/chunks/node_modules_a34774._.js");
+runtime.loadChunk("server/chunks/[root of the server]__736dae._.js");
+module.exports = runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/app/(chat)/api/files/upload/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)", CHUNK_PUBLIC_PATH).exports;

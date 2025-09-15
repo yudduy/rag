@@ -18,6 +18,7 @@ import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
+import { IndexingStatus } from "./indexing-pill";
 
 const suggestedActions = [
   {
@@ -42,6 +43,7 @@ export function MultimodalInput({
   messages,
   append,
   handleSubmit,
+  updateIndexingStatus,
 }: {
   input: string;
   setInput: (value: string) => void;
@@ -60,6 +62,7 @@ export function MultimodalInput({
     },
     chatRequestOptions?: ChatRequestOptions,
   ) => void;
+  updateIndexingStatus: (status: IndexingStatus) => void;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { width } = useWindowSize();

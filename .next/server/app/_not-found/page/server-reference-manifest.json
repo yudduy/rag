@@ -1,0 +1,13 @@
+{
+  "node": {
+    "44b708f89b2b058d3d1a9451f92ae25ec1a21e8f": {
+      "workers": {
+        "app/_not-found/page": "[project]/.next-internal/server/app/_not-found/page/actions.js { ACTIONS_MODULE0 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/_not-found/page": "rsc"
+      }
+    }
+  },
+  "edge": {}
+}

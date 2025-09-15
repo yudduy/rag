@@ -9,6 +9,7 @@ import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
 
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
+import { IndexingPill, useIndexingStatus } from "./indexing-pill";
 
 export function Chat({
   id,
@@ -32,6 +33,7 @@ export function Chat({
     useScrollToBottom<HTMLDivElement>();
 
   const [attachments, setAttachments] = useState<Array<Attachment>>([]);
+  const { status: indexingStatus, updateStatus: updateIndexingStatus, clearStatus: clearIndexingStatus } = useIndexingStatus();
 
   return (
     <div className="flex flex-row justify-center pb-4 md:pb-8 h-dvh bg-background">
@@ -59,8 +61,14 @@ export function Chat({
           />
         </div>
 
-        <form className="flex flex-row gap-2 relative items-end w-full md:max-w-[500px] max-w-[calc(100dvw-32px) px-4 md:px-0">
-          <MultimodalInput
+        <div className="w-full md:max-w-[500px] max-w-[calc(100dvw-32px)] px-4 md:px-0">
+          <IndexingPill 
+            status={indexingStatus} 
+            onDismiss={clearIndexingStatus} 
+          />
+          
+          <form className="flex flex-row gap-2 relative items-end w-full">
+            <MultimodalInput
             input={input}
             setInput={setInput}
             handleSubmit={handleSubmit}
@@ -70,8 +78,10 @@ export function Chat({
             setAttachments={setAttachments}
             messages={messages}
             append={append}
+            updateIndexingStatus={updateIndexingStatus}
           />
-        </form>
+          </form>
+        </div>
       </div>
     </div>
   );

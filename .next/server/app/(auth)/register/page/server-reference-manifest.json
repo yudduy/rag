@@ -1,0 +1,45 @@
+{
+  "node": {
+    "502a181f5f138f7659322429600b65d02d3b6515": {
+      "workers": {
+        "app/(auth)/register/page": "[project]/.next-internal/server/app/(auth)/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/(auth)/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/(auth)/register/page": "actionBrowser"
+      }
+    },
+    "438df616bf9e4a444c8e51104f9d1b1e2b06585f": {
+      "workers": {
+        "app/(auth)/register/page": "[project]/.next-internal/server/app/(auth)/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/(auth)/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/(auth)/register/page": "actionBrowser"
+      }
+    },
+    "c68676ceeaeefdd2032c221b418a16efb817be4a": {
+      "workers": {
+        "app/(auth)/register/page": "[project]/.next-internal/server/app/(auth)/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/(auth)/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/(auth)/register/page": "actionBrowser"
+      }
+    },
+    "1e861a14a25a6037624a7c72ec2bfc9c2d305d9b": {
+      "workers": {
+        "app/(auth)/register/page": "[project]/.next-internal/server/app/(auth)/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/(auth)/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/(auth)/register/page": "actionBrowser"
+      }
+    },
+    "44b708f89b2b058d3d1a9451f92ae25ec1a21e8f": {
+      "workers": {
+        "app/(auth)/register/page": "[project]/.next-internal/server/app/(auth)/register/page/actions.js { ACTIONS_MODULE0 => \"[project]/app/(auth)/actions.ts [app-rsc] (ecmascript)\", ACTIONS_MODULE1 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
+      },
+      "layer": {
+        "app/(auth)/register/page": "rsc"
+      }
+    }
+  },
+  "edge": {}
+}

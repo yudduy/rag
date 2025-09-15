@@ -1,0 +1,15 @@
+const CHUNK_PUBLIC_PATH = "server/app/(chat)/page.js";
+const runtime = require("../../chunks/ssr/[turbopack]_runtime.js");
+runtime.loadChunk("server/chunks/ssr/[root of the server]__ae5851._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_next_d34874._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_@auth_core_6ff955._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_jose_dist_node_esm_d95a1a._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_postgres_src_b9a524._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_drizzle-orm_5d7c63._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_tailwind-merge_dist_bundle-mjs_mjs_6bc68a._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_zod_v3_17d345._.js");
+runtime.loadChunk("server/chunks/ssr/acdaa_zod-to-json-schema_dist_esm_c92f3d._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_ai_dist_index_mjs_dc2faa._.js");
+runtime.loadChunk("server/chunks/ssr/node_modules_304c90._.js");
+runtime.getOrInstantiateRuntimeModule("[project]/.next-internal/server/app/(chat)/page/actions.js { ACTIONS_MODULE0 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)", CHUNK_PUBLIC_PATH);
+module.exports = runtime.getOrInstantiateRuntimeModule("[project]/node_modules/next/dist/esm/build/templates/app-page.jspage=/(chat)/page { COMPONENT_0 => \"[project]/app/layout.tsx [app-rsc] (ecmascript, Next.js server component)\", COMPONENT_1 => \"[project]/node_modules/next/dist/client/components/not-found-error.js [app-rsc] (ecmascript, Next.js server component)\", COMPONENT_2 => \"[project]/app/(chat)/page.tsx [app-rsc] (ecmascript, Next.js server component)\", METADATA_3 => \"[project]/app/(chat)/twitter-image.png.mjs { IMAGE => \\\"[project]/app/(chat)/twitter-image.png [app-rsc] (static)\\\" } [app-rsc] (structured image object, ecmascript)\", METADATA_4 => \"[project]/app/(chat)/opengraph-image.png.mjs { IMAGE => \\\"[project]/app/(chat)/opengraph-image.png [app-rsc] (static)\\\" } [app-rsc] (structured image object, ecmascript)\", METADATA_5 => \"[project]/app/(chat)/twitter-image.png.mjs { IMAGE => \\\"[project]/app/(chat)/twitter-image.png [app-rsc] (static)\\\" } [app-rsc] (structured image object, ecmascript)\", METADATA_6 => \"[project]/app/(chat)/opengraph-image.png.mjs { IMAGE => \\\"[project]/app/(chat)/opengraph-image.png [app-rsc] (static)\\\" } [app-rsc] (structured image object, ecmascript)\", METADATA_7 => \"[project]/app/favicon.ico.mjs { IMAGE => \\\"[project]/app/favicon.ico [app-rsc] (static)\\\" } [app-rsc] (structured image object, ecmascript)\" } [app-rsc] (ecmascript)", CHUNK_PUBLIC_PATH).exports;
