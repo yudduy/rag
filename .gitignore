@@ -92,3 +92,4 @@ tmp/
 
 # UV
 uv.lock
+.vercel

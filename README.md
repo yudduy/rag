@@ -40,7 +40,7 @@ graph TD
 
 ### Step 1: Clone and Install
 
-```bash
+   ```bash
 # Clone the repository
 git clone <your-repository-url>
 cd rag
@@ -73,31 +73,33 @@ npm install
 1. **Get API Key**: Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. **Create Key**: Generate a new API key for Gemini
 
-### Step 3: Vercel Postgres Setup
+### Step 3: Neon Postgres Setup via Vercel Marketplace
 
-Based on the [Vercel Postgres documentation](https://vercel.com/docs/postgres), set up your database through the Vercel Marketplace:
+Set up your serverless PostgreSQL database through Vercel's integration with Neon:
 
-#### 3.1 Create Vercel Postgres Database
+#### 3.1 Create Neon Database via Vercel
 
 1. **Login to Vercel**: Go to [vercel.com](https://vercel.com) and sign in
 2. **Navigate to Storage**: In your project dashboard, click the **Storage** tab
 3. **Create Database**: 
-   - Click **Create Database**
-   - Select **Postgres** from the marketplace
+   - Click **Create Database** or **Browse Storage**
+   - Select **Neon** from the "Marketplace Database Providers" section
    - Choose a database name (e.g., `rag-chatbot-db`)
    - Select your preferred region (closest to your users)
-   - Click **Create**
+   - Click **Continue** and authorize the integration
 
 #### 3.2 Connect Database to Project
 
-1. **Connect Project**: After database creation, click **Connect Project**
-2. **Select Project**: Choose your RAG chatbot project from the dropdown
-3. **Connect**: Click **Connect** - Vercel automatically injects environment variables
-4. **Verify Connection**: Check that `POSTGRES_URL` appears in your project's environment variables
+1. **Complete Setup**: After authorizing Neon, complete the database creation process
+2. **Connect Project**: Click **Connect Project** and select your RAG chatbot project
+3. **Auto-Injection**: Vercel automatically injects `POSTGRES_URL` and other database environment variables
+4. **Verify Connection**: Check your project's environment variables to confirm `POSTGRES_URL` is present
+
+**Note**: You now have a Neon serverless PostgreSQL database connected through Vercel's marketplace. No separate Neon account setup required.
 
 #### 3.3 Pull Environment Variables Locally
 
-```bash
+   ```bash
 # Install Vercel CLI (if not already installed)
 npm install -g vercel
 
@@ -115,13 +117,22 @@ This will automatically create/update your `.env.local` file with the Vercel Pos
 
 ### Step 4: Environment Configuration
 
-After pulling Vercel environment variables, your `.env.local` should contain the Vercel Postgres connection. Add the remaining required variables:
+After pulling Vercel environment variables, your `.env.local` should contain the Neon database connection. Add the remaining required variables:
 
-```bash
-# Database (Automatically added by Vercel)
-POSTGRES_URL="vercel-postgres-connection-string-from-vercel-env-pull"
+   ```bash
+# Copy the example file to get started
+cp .env.example .env.local
 
-# Authentication (Required)
+# Then edit .env.local with your actual API keys
+```
+
+Your `.env.local` should contain (see `.env.example` for template):
+
+   ```bash
+# Database (Automatically added by Neon via Vercel)
+POSTGRES_URL="neon-connection-string-from-vercel-env-pull"
+
+# Authentication (Required - Generate with: openssl rand -base64 32)
 AUTH_SECRET="your-random-secret-key-min-32-chars"
 
 # AI Models (Required)
@@ -131,7 +142,7 @@ GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
 PINECONE_API_KEY="your-pinecone-api-key"
 PINECONE_INDEX_NAME="rag-documents"
 
-# HuggingFace (Optional - for higher rate limits)
+# HuggingFace (Optional but Recommended - for higher rate limits)
 HUGGINGFACE_API_KEY="your-huggingface-token"
 
 # RAG Configuration (Optional - uses smart defaults)
@@ -140,23 +151,24 @@ RAG_CHUNK_OVERLAP=200
 RAG_MAX_DOCS=5
 RAG_SIMILARITY_THRESHOLD=0.7
 RAG_QUERY_EXPANSION=false
+RAG_RERANKING=false
 ```
 
 ### Step 5: Database Migration
 
-```bash
-# Run database migrations to set up tables in Vercel Postgres
+   ```bash
+# Run database migrations to set up tables in Neon database
 npm run db:migrate
-
-# Optional: Push schema changes directly to Vercel Postgres
+   
+# Optional: Push schema changes directly to Neon
 npm run db:push
-```
+   ```
 
-**Note**: The database operations will run against your Vercel Postgres instance using the `POSTGRES_URL` environment variable.
+**Note**: The database operations will run against your Neon PostgreSQL database using the `POSTGRES_URL` environment variable.
 
 ### Step 6: Test the RAG System
 
-```bash
+   ```bash
 # Test Pinecone + HuggingFace integration
 npm run rag:test
 ```
@@ -246,7 +258,7 @@ Document A suggests... while Document B indicates...
 | **Pinecone** | 2GB storage (~300K vectors) | Perfect for <50 documents |
 | **HuggingFace** | 1000 requests/hour | Sufficient for personal use |
 | **Gemini** | 15 requests/minute | Great for chat interactions |
-| **Vercel Postgres** | 60 compute hours/month, 256MB storage | Ideal for development and small projects |
+| **Neon** | 512MB storage, 1 compute hour/month | Ideal for development and small projects |
 
 ### Performance Tuning
 
@@ -362,9 +374,9 @@ npm run rag:test     # Test embeddings + Pinecone
 ### Vercel Deployment (Recommended)
 
 1. **Connect Repository**: Import your GitHub repo to Vercel
-2. **Database Integration**: Vercel Postgres is already connected and environment variables are automatically injected
+2. **Database Integration**: Neon database is already connected via marketplace and environment variables are automatically injected
 3. **Additional Environment Variables**: Add the remaining variables (API keys, secrets) to Vercel project settings
-4. **Deploy**: Automatic deployment on push with seamless database connectivity
+4. **Deploy**: Automatic deployment on push with seamless Neon database connectivity
 
 ```bash
 # Optional: Deploy via CLI
@@ -391,7 +403,7 @@ CMD ["npm", "start"]
 ### Environment Variables Checklist
 
 Production deployment requires:
-- ✅ `POSTGRES_URL` - Automatically injected by Vercel Postgres
+- ✅ `POSTGRES_URL` - Automatically injected by Neon via Vercel marketplace
 - ✅ `AUTH_SECRET` - Session encryption (add manually)
 - ✅ `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API (add manually)
 - ✅ `PINECONE_API_KEY` - Vector database (add manually)
@@ -422,7 +434,7 @@ HUGGINGFACE_API_KEY=your-token
 
 #### "Database connection error"
 ```bash
-# Verify Vercel Postgres connection
+# Verify Neon database connection via Vercel
 vercel env pull .env.local
 
 # Check if POSTGRES_URL is properly set
@@ -431,7 +443,7 @@ echo $POSTGRES_URL
 # Test database migration
 npm run db:push
 
-# If still failing, check Vercel dashboard for database status
+# If still failing, check Vercel dashboard Storage tab for Neon database status
 ```
 
 #### "Document upload fails"
@@ -463,7 +475,7 @@ npm run db:push
 # Check all services
 npm run rag:test
 
-# Verify Vercel Postgres connection
+# Verify Neon database connection
 vercel env pull .env.local
 npm run db:push --dry-run
 
@@ -478,7 +490,7 @@ tail -f .next/server.log
 - **Pinecone**: Monitor vector count in dashboard
 - **HuggingFace**: Check request usage
 - **Gemini**: Monitor API usage in Google Cloud Console
-- **Vercel Postgres**: Monitor compute hours and storage in Vercel dashboard
+- **Neon**: Monitor compute hours and storage in Vercel Storage dashboard
 
 ## 📊 Usage Analytics
 
@@ -495,7 +507,7 @@ With default settings, you can handle:
 When you exceed free tiers:
 1. **Pinecone**: $70/month for 20GB storage
 2. **HuggingFace**: $9/month for Inference Endpoints
-3. **Vercel Postgres**: $20/month for Pro plan with more compute hours and storage
+3. **Neon**: $19/month for Launch plan with 10GB storage and more compute hours
 
 ## 🤝 Contributing
 
