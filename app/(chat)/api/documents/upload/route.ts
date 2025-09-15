@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { createDocument, updateDocumentChunkCount } from "@/db/queries";
 import { DocumentProcessor } from "@/lib/document-processor";
-import { getCurrentRAGCore } from "@/lib/rag-core";
+import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
     // Index document with RAG
     let indexingResult;
     try {
-      const ragCore = getCurrentRAGCore();
+      const ragCore = getPineconeRAGCore();
       indexingResult = await ragCore.indexDocument(
         processedDoc.filename,
         processedDoc.content,
@@ -163,9 +163,9 @@ export async function GET() {
     }
 
     // Get RAG core status and user documents
-    const ragCore = getRAGCore();
-    const ragDocuments = ragCore.getUserDocuments(session.user.id);
-    const ragStatus = ragCore.getStatus();
+    const ragCore = getPineconeRAGCore();
+    const ragDocuments = await ragCore.getUserDocuments(session.user.id);
+    const ragStatus = await ragCore.getStatus();
 
     return NextResponse.json({
       documents: ragDocuments,

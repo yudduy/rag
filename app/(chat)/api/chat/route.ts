@@ -16,7 +16,7 @@ import {
   getReservationById,
   saveChat,
 } from "@/db/queries";
-import { getCurrentRAGCore } from "@/lib/rag-core";
+import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 import { generateUUID } from "@/lib/utils";
 
 export async function POST(request: Request) {
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
   
   if (session.user?.id && latestUserMessage) {
     try {
-      const ragCore = getCurrentRAGCore();
+      const ragCore = getPineconeRAGCore();
       const retrievedDocs = await ragCore.retrieveDocuments(
         latestUserMessage,
         session.user.id,
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
           }
 
           try {
-            const ragCore = getCurrentRAGCore();
+            const ragCore = getPineconeRAGCore();
             const results = await ragCore.retrieveDocuments(
               query,
               session.user.id,

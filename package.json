@@ -14,7 +14,6 @@
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "rag:migrate": "tsx scripts/migrate-to-pinecone.ts",
     "rag:test": "tsx -e \"import {getPineconeRAGCore} from './lib/pinecone-rag-core'; getPineconeRAGCore().testPipeline().then(console.log)\""
   },
   "dependencies": {

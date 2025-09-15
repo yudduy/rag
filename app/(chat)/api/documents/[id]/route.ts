@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
 import { getDocumentById, deleteDocumentById } from "@/db/queries";
-import { getCurrentRAGCore } from "@/lib/rag-core";
+import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
 export async function DELETE(
   request: Request,
@@ -30,7 +30,7 @@ export async function DELETE(
 
     // Delete from RAG system
     try {
-      const ragCore = getCurrentRAGCore();
+      const ragCore = getPineconeRAGCore();
       await ragCore.deleteDocument(document.filename, session.user.id);
     } catch (ragError) {
       console.error("RAG deletion error:", ragError);
