@@ -1,309 +1,513 @@
-# SOTA RAG System
+# 🚀 Zero-Cost RAG Chatbot
 
-A production-ready Retrieval-Augmented Generation system built with [LlamaIndex](https://www.llamaindex.ai/). This system provides query processing, semantic caching, response verification, and multimodal support for building AI applications.
+A production-ready Retrieval-Augmented Generation (RAG) chatbot built with **Next.js**, **Pinecone**, and **HuggingFace**. This system provides intelligent document-based conversations with **zero monthly costs** using free tier services.
 
-## Features
+## ✨ Features
 
-- **Query Processing** - Automatic query analysis and routing with agentic workflow support
-- **Semantic Caching** - Redis-based caching with similarity matching to reduce API costs
-- **Response Verification** - Multi-level confidence scoring and hallucination detection
-- **Performance Optimization** - Four configurable performance profiles for different use cases
-- **Multimodal Support** - Text and image processing with CLIP integration
-- **Security** - Input validation, rate limiting, and monitoring
-- **Production Monitoring** - Health checks, metrics collection, and alerting
-- **Scalable Deployment** - LlamaDeploy integration with auto-scaling support
+- **📄 Document Intelligence** - Upload and chat with PDF, DOCX, MD, and TXT files
+- **💰 Zero Cost Operation** - Pinecone Serverless + HuggingFace free tiers
+- **🔒 Multi-User Support** - Secure namespace-based user isolation
+- **⚡ Real-time Chat** - Streaming responses with document context
+- **🎯 Smart Search** - Semantic document retrieval with relevance scoring
+- **🛡️ Production Ready** - Authentication, error handling, and monitoring
+- **📱 Modern UI** - Responsive design with drag-and-drop file uploads
+- **🔧 Developer Friendly** - TypeScript, comprehensive error handling
 
-## Quick Start
+## 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[User] --> B[Next.js Frontend]
+    B --> C[API Routes]
+    C --> D[Authentication]
+    D --> E[Document Processing]
+    E --> F[HuggingFace Embeddings]
+    F --> G[Pinecone Vector Store]
+    G --> H[RAG Context]
+    H --> I[Gemini AI]
+    I --> J[Streaming Response]
+```
+
+## 🚀 Quick Start
 
 ### Prerequisites
 
-1. **Python 3.8+** and [uv](https://astral.sh/uv/) package manager
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
+1. **Node.js 18+** and **npm**
+2. **Pinecone Account** (free tier)
+3. **HuggingFace Account** (optional, for higher rate limits)
+4. **Google AI API Key** (for Gemini)
+5. **PostgreSQL Database** (local or cloud)
 
-2. **OpenAI API Key** from [OpenAI Platform](https://platform.openai.com/api-keys)
-
-3. **Redis (Optional)** - For semantic caching (recommended for production)
-   ```bash
-   # macOS
-   brew install redis && brew services start redis
-   
-   # Ubuntu/Debian
-   sudo apt install redis-server && sudo systemctl start redis-server
-   
-   # Docker
-   docker run -d -p 6379:6379 --name rag-redis redis:alpine
-   ```
-
-### Installation
-
-1. **Clone and Install**
-   ```bash
-   git clone <repository-url>
-   cd rag
-   uv sync
-   ```
-
-2. **Configure Environment**
-   ```bash
-   # Copy the example environment file to project root
-   cp .env.example .env
-   
-   # Edit .env and add your OpenAI API key
-   OPENAI_API_KEY=your_openai_api_key_here
-   ```
-
-3. **Prepare Your Documents**
-   ```bash
-   # Add your documents to the data directory
-   cp your_documents.pdf web/data/
-   
-   # Generate the search index
-   uv run generate
-   ```
-
-### Running the System
-
-1. **Start the API Server**
-   ```bash
-   uv run -m llama_deploy.apiserver
-   ```
-
-2. **Deploy the Workflow** (in a new terminal)
-   ```bash
-   uv run llamactl deploy llama_deploy.yml
-   ```
-
-3. **Access the System**
-   - Web Interface: run `npm run dev` in `web/` and open http://localhost:3000
-   - API Documentation: http://localhost:4501/docs
-   - Health Check: http://localhost:4501/health
-
-## Configuration
-
-### Environment Variables
-
-The system uses intelligent defaults, but you can customize behavior:
+### Step 1: Clone and Install
 
 ```bash
-# Required
-OPENAI_API_KEY=your_openai_api_key_here
+# Clone the repository
+git clone <your-repository-url>
+cd rag
 
-# Performance Profile (optional)
-PERFORMANCE_PROFILE=balanced  # high_accuracy|balanced|cost_optimized|speed
-
-# Caching (optional, but recommended)
-SEMANTIC_CACHE_ENABLED=true
-REDIS_URL=redis://localhost:6379
-
-# Features (optional)
-VERIFICATION_ENABLED=true        # Response verification
-AGENT_ROUTING_ENABLED=true       # Smart query routing
-MULTIMODAL_ENABLED=false         # Image processing
-TTS_INTEGRATION_ENABLED=false    # Text-to-speech
+# Install dependencies
+npm install
 ```
 
-### Performance Profiles
+### Step 2: Set Up Free Tier Accounts
 
-| Profile | Response Time | Accuracy | Cost | Use Case |
-|---------|---------------|----------|------|----------|
-| `high_accuracy` | ~3s | 96% | Higher | Research, legal, critical decisions |
-| `balanced` | ~1.5s | 92% | Moderate | General applications |
-| `cost_optimized` | ~2s | 87% | Lower | High-volume usage |
-| `speed` | <1s | 83% | Lowest | Real-time chat, quick answers |
+#### 2.1 Pinecone Setup (Required)
 
-## API Usage
+1. **Create Account**: Go to [pinecone.io](https://www.pinecone.io/) and sign up
+2. **Create Project**: Create a new project in the dashboard
+3. **Get API Key**: 
+   - Go to "API Keys" in the left sidebar
+   - Copy your API key
+   - Note: The system will auto-create your index on first use
 
-### Basic Query
+#### 2.2 HuggingFace Setup (Optional but Recommended)
+
+1. **Create Account**: Go to [huggingface.co](https://huggingface.co/) and sign up
+2. **Generate Token**:
+   - Go to Settings → Access Tokens
+   - Create a new token with "Read" permissions
+   - Copy the token
+
+#### 2.3 Google AI Setup (Required)
+
+1. **Get API Key**: Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. **Create Key**: Generate a new API key for Gemini
+
+### Step 3: Database Setup
+
+#### Option A: Local PostgreSQL
 ```bash
-curl -X POST 'http://localhost:4501/deployments/chat/tasks/create' \
-  -H 'Content-Type: application/json' \
-  -d '{"input": "{\"user_msg\":\"What is machine learning?\"}", "service_id": "workflow"}'
+# Install PostgreSQL (macOS)
+brew install postgresql
+brew services start postgresql
+
+# Create database
+createdb rag_chatbot
 ```
 
-### With Performance Profile
-```bash
-curl -X POST 'http://localhost:4501/deployments/chat/tasks/create' \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "input": "{\"user_msg\":\"Explain neural networks\",\"profile\":\"high_accuracy\"}", 
-    "service_id": "workflow"
-  }'
-```
+#### Option B: Cloud Database (Recommended)
+- **Vercel Postgres**: Free tier with 60 hours compute/month
+- **Supabase**: Free tier with 500MB storage
+- **Neon**: Free tier with 3GB storage
 
-### Monitoring
-```bash
-# System health
-curl 'http://localhost:4501/health'
+### Step 4: Environment Configuration
 
-# Performance metrics
-curl 'http://localhost:4501/metrics'
-```
-
-## Additional Features
-
-### Semantic Caching
-
-Reduce API costs by caching similar queries:
+Create `.env.local` in the project root:
 
 ```bash
-# Enable caching in .env
-SEMANTIC_CACHE_ENABLED=true
-REDIS_URL=redis://localhost:6379
-CACHE_SIMILARITY_THRESHOLD=0.97
+# Database (Required)
+POSTGRES_URL="postgresql://username:password@localhost:5432/rag_chatbot"
+# OR for cloud databases:
+# POSTGRES_URL="your-cloud-database-connection-string"
+
+# Authentication (Required)
+AUTH_SECRET="your-random-secret-key-min-32-chars"
+
+# AI Models (Required)
+GOOGLE_GENERATIVE_AI_API_KEY="your-google-ai-api-key"
+
+# Pinecone (Required)
+PINECONE_API_KEY="your-pinecone-api-key"
+PINECONE_INDEX_NAME="rag-documents"
+
+# HuggingFace (Optional - for higher rate limits)
+HUGGINGFACE_API_KEY="your-huggingface-token"
+
+# RAG Configuration (Optional - uses smart defaults)
+RAG_CHUNK_SIZE=1000
+RAG_CHUNK_OVERLAP=200
+RAG_MAX_DOCS=5
+RAG_SIMILARITY_THRESHOLD=0.7
+RAG_QUERY_EXPANSION=false
 ```
 
-Expected cost reduction: 30-50% for typical workloads.
-
-### Response Verification
-
-Multi-level confidence scoring to detect potential hallucinations:
+### Step 5: Database Migration
 
 ```bash
-# Enable verification in .env
-VERIFICATION_ENABLED=true
-VERIFICATION_THRESHOLD=0.8
-VERIFICATION_MODEL=gpt-4o-mini
+# Run database migrations
+npm run db:migrate
+
+# Optional: Push schema changes
+npm run db:push
 ```
 
-### Multimodal Support
-
-Process images alongside text queries:
+### Step 6: Test the RAG System
 
 ```bash
-# Install multimodal dependencies
-uv sync --extra multimodal
-
-# Enable in .env
-MULTIMODAL_ENABLED=true
-IMAGE_INDEXING_ENABLED=true
+# Test Pinecone + HuggingFace integration
+npm run rag:test
 ```
 
-### Text-to-Speech
+Expected output:
+```json
+{
+  "success": true,
+  "embeddings_test": { "success": true, "dimensions": 384 },
+  "pinecone_test": { "pinecone_connected": true, "index_name": "rag-documents" }
+}
+```
 
-Add voice output to responses:
+### Step 7: Start the Application
 
 ```bash
-# Install TTS dependencies
-uv sync --extra tts
+# Development mode
+npm run dev
 
-# Enable in .env
-TTS_INTEGRATION_ENABLED=true
+# Production build
+npm run build
+npm start
 ```
 
-## Development
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## 📖 How to Use
+
+### 1. User Registration/Login
+
+1. Navigate to the application
+2. Click "Register" to create an account
+3. Verify your email (if configured)
+4. Login with your credentials
+
+### 2. Upload Documents
+
+1. **Click the Document Manager** (📁 icon in the navbar)
+2. **Upload Files**:
+   - Drag & drop files or click "Choose Files"
+   - Supported: PDF, DOCX, MD, TXT (max 10MB each)
+   - Files are automatically processed and indexed
+3. **View Progress**: See upload status and chunk counts
+4. **Manage Documents**: View, delete, or re-upload files
+
+### 3. Chat with Your Documents
+
+1. **Start a Conversation**: Type your question in the chat
+2. **Automatic Context**: The system automatically finds relevant documents
+3. **Manual Search**: Use the `searchDocuments` tool for specific queries
+4. **Source Attribution**: See which documents informed the response
+
+#### Example Conversations:
+
+```
+You: "What are the main findings in the research paper?"
+AI: Based on your uploaded research paper "AI_Study_2024.pdf", the main findings include...
+[Source: AI_Study_2024.pdf]
+
+You: "Search for information about machine learning algorithms"
+AI: *searches documents* Found 3 relevant sections about ML algorithms...
+```
+
+### 4. Advanced Features
+
+#### Document Search Tool
+```
+You: "Search my documents for 'quarterly revenue'"
+AI: *uses searchDocuments tool* Found 2 documents mentioning quarterly revenue:
+1. Q3_Report.pdf - Revenue increased 15%...
+2. Annual_Summary.docx - Quarterly breakdown shows...
+```
+
+#### Multi-Document Conversations
+```
+You: "Compare the findings between document A and document B"
+AI: *analyzes both documents* Comparing the two documents:
+Document A suggests... while Document B indicates...
+```
+
+## ⚙️ Configuration Guide
+
+### Free Tier Limits
+
+| Service | Free Tier Limit | Your Usage |
+|---------|----------------|------------|
+| **Pinecone** | 2GB storage (~300K vectors) | Perfect for <50 documents |
+| **HuggingFace** | 1000 requests/hour | Sufficient for personal use |
+| **Gemini** | 15 requests/minute | Great for chat interactions |
+| **Vercel Postgres** | 60 hours/month | Adequate for development |
+
+### Performance Tuning
+
+#### For Better Accuracy:
+```bash
+RAG_SIMILARITY_THRESHOLD=0.8  # Higher threshold
+RAG_MAX_DOCS=7               # More context
+```
+
+#### For Faster Responses:
+```bash
+RAG_SIMILARITY_THRESHOLD=0.6  # Lower threshold
+RAG_MAX_DOCS=3               # Less context
+```
+
+#### For Cost Optimization:
+```bash
+# Don't set HUGGINGFACE_API_KEY to use public endpoint
+RAG_CHUNK_SIZE=800           # Smaller chunks
+```
+
+### Environment Profiles
+
+#### Development
+```bash
+NODE_ENV=development
+RAG_SIMILARITY_THRESHOLD=0.6
+```
+
+#### Production
+```bash
+NODE_ENV=production
+RAG_SIMILARITY_THRESHOLD=0.75
+HUGGINGFACE_API_KEY=your-token  # For reliability
+```
+
+## 🛠️ Development
+
+### Project Structure
+
+```
+rag/
+├── app/                    # Next.js App Router
+│   ├── (auth)/            # Authentication pages
+│   ├── (chat)/            # Chat interface & API
+│   └── api/               # API endpoints
+├── components/            # React components
+│   ├── custom/           # App-specific components
+│   ├── flights/          # Demo flight components
+│   └── ui/               # Reusable UI components
+├── lib/                  # Core libraries
+│   ├── pinecone-rag-core.ts    # Pinecone RAG implementation
+│   ├── huggingface-embeddings.ts # HF embeddings
+│   ├── document-processor.ts    # File processing
+│   └── utils.ts          # Utilities
+├── db/                   # Database
+│   ├── schema.ts         # Drizzle schema
+│   ├── queries.ts        # Database queries
+│   └── migrate.ts        # Migration runner
+└── public/               # Static assets
+```
+
+### Adding New Document Types
+
+1. **Update file validation** in `lib/document-processor.ts`:
+```typescript
+const ALLOWED_TYPES = [
+  "text/plain",
+  "text/markdown", 
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "your-new-mime-type" // Add here
+];
+```
+
+2. **Add processing logic** for the new file type
+3. **Update frontend validation** in `components/custom/document-manager.tsx`
+
+### Custom Embedding Models
+
+Replace the default model in `lib/huggingface-embeddings.ts`:
+
+```typescript
+// Current: all-MiniLM-L6-v2 (384 dimensions)
+this.model = 'sentence-transformers/all-MiniLM-L6-v2';
+
+// Alternatives:
+// 'sentence-transformers/all-mpnet-base-v2' (768 dim, better quality)
+// 'sentence-transformers/all-distilroberta-v1' (768 dim)
+```
+
+**Important**: If changing dimensions, update Pinecone index configuration.
 
 ### Running Tests
 
 ```bash
-# All tests
-uv run pytest
+# Type checking
+npm run type-check
 
-# Specific test types
-uv run pytest tests/unit/      # Unit tests
-uv run pytest tests/integration/  # Integration tests
-uv run pytest tests/e2e/      # End-to-end tests
+# Linting
+npm run lint
+
+# Database operations
+npm run db:generate  # Generate migrations
+npm run db:push      # Push schema changes
+
+# RAG system testing
+npm run rag:test     # Test embeddings + Pinecone
 ```
 
-### Code Quality
+## 🚀 Production Deployment
+
+### Vercel Deployment (Recommended)
+
+1. **Connect Repository**: Import your GitHub repo to Vercel
+2. **Environment Variables**: Add all `.env.local` variables to Vercel
+3. **Database**: Use Vercel Postgres or external provider
+4. **Deploy**: Automatic deployment on push
 
 ```bash
-# Format code
-uv run black src tests
-
-# Check types
-uv run mypy src
-
-# Lint code
-uv run flake8 src tests
+# Optional: Deploy via CLI
+npm i -g vercel
+vercel --prod
 ```
-
-### Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes and add tests
-4. Run the test suite: `uv run pytest`
-5. Submit a pull request
-
-## Architecture
-
-The system uses a modular architecture with these key components:
-
-- **UnifiedWorkflow** - Main orchestrator for query processing
-- **SemanticCache** - Redis-based similarity caching
-- **HallucinationDetector** - Response verification and confidence scoring
-- **QueryEngine** - Document retrieval and response generation
-- **HealthMonitor** - System monitoring and alerting
-
-## Production Deployment
 
 ### Docker Deployment
 
 ```dockerfile
-FROM python:3.11-slim
+FROM node:18-alpine
 
 WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+
 COPY . .
+RUN npm run build
 
-RUN pip install uv && uv sync
-EXPOSE 4501 8000
-
-CMD ["uv", "run", "-m", "llama_deploy.apiserver"]
+EXPOSE 3000
+CMD ["npm", "start"]
 ```
 
-### Environment Configuration
+### Environment Variables Checklist
 
-For production, ensure you:
+Production deployment requires:
+- ✅ `POSTGRES_URL` - Database connection
+- ✅ `AUTH_SECRET` - Session encryption
+- ✅ `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API
+- ✅ `PINECONE_API_KEY` - Vector database
+- ✅ `PINECONE_INDEX_NAME` - Index name
+- ⚠️ `HUGGINGFACE_API_KEY` - Optional but recommended
+- ⚠️ `NODE_ENV=production` - Production mode
 
-1. Use Redis for caching
-2. Configure proper logging levels
-3. Set up monitoring and alerting
-4. Use secure API key management
-5. Configure appropriate resource limits
-
-### Monitoring
-
-The system provides comprehensive monitoring:
-
-- Health checks at `/health`
-- Metrics collection at `/metrics`
-- Performance dashboards
-- Cost tracking and optimization
-
-## Troubleshooting
+## 🔧 Troubleshooting
 
 ### Common Issues
 
-**"API key invalid"**
-- Verify your OpenAI API key format
-- Ensure the key has sufficient permissions
+#### "Pinecone connection failed"
+```bash
+# Check API key format
+echo $PINECONE_API_KEY
 
-**"No Redis connection"**
-- Check Redis is running: `redis-cli ping`
-- Verify connection URL in environment variables
+# Test connection
+npm run rag:test
+```
 
-**"Index not found"**
-- Run `uv run generate` after adding documents
-- Check that documents exist in `web/data/`
+#### "HuggingFace rate limit exceeded"
+```bash
+# Add API key for higher limits
+HUGGINGFACE_API_KEY=your-token
 
-**Slow responses**
-- Switch to `speed` profile for faster responses
-- Enable caching for repeated queries
-- Check system resources at `/health`
+# Or reduce batch size in code
+```
 
-### Getting Help
+#### "Database connection error"
+```bash
+# Check connection string
+npm run db:push
 
-- System Health: http://localhost:4501/health
-- API Documentation: http://localhost:4501/docs
-- Issues: Report bugs with health check output
-- Discussions: For usage questions and feature requests
+# Test connection
+psql $POSTGRES_URL -c "SELECT 1"
+```
 
-## License
+#### "Document upload fails"
+- Check file size (10MB limit)
+- Verify file type is supported
+- Check server logs for processing errors
+
+#### "No search results"
+- Verify documents are uploaded and indexed
+- Lower similarity threshold: `RAG_SIMILARITY_THRESHOLD=0.6`
+- Check document content quality
+
+### Performance Optimization
+
+#### Slow Document Upload
+1. **Reduce chunk size**: `RAG_CHUNK_SIZE=800`
+2. **Check HuggingFace rate limits**
+3. **Use HuggingFace API key**
+
+#### Slow Chat Responses
+1. **Lower similarity threshold**: `RAG_SIMILARITY_THRESHOLD=0.6`
+2. **Reduce max documents**: `RAG_MAX_DOCS=3`
+3. **Check Pinecone region** (use `us-east-1`)
+
+### Monitoring
+
+#### System Health
+```bash
+# Check all services
+npm run rag:test
+
+# Database health
+npm run db:push --dry-run
+
+# Check logs
+tail -f .next/server.log
+```
+
+#### Cost Monitoring
+- **Pinecone**: Monitor vector count in dashboard
+- **HuggingFace**: Check request usage
+- **Gemini**: Monitor API usage in Google Cloud Console
+
+## 📊 Usage Analytics
+
+### Free Tier Capacity
+
+With default settings, you can handle:
+- **Documents**: ~50-100 typical PDFs (depends on length)
+- **Users**: Unlimited (namespace isolation)
+- **Queries**: ~1000/hour (HuggingFace limit)
+- **Storage**: 2GB vectors + unlimited database
+
+### Scaling Up
+
+When you exceed free tiers:
+1. **Pinecone**: $70/month for 20GB storage
+2. **HuggingFace**: $9/month for Inference Endpoints
+3. **Database**: $20/month for managed PostgreSQL
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature-name`
+3. Make changes and test: `npm run rag:test`
+4. Submit a pull request
+
+### Development Setup
+
+```bash
+# Clone your fork
+git clone https://github.com/yourusername/rag.git
+cd rag
+
+# Install dependencies
+npm install
+
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your API keys
+
+# Run tests
+npm run type-check
+npm run lint
+npm run rag:test
+
+# Start development
+npm run dev
+```
+
+## 📄 License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
+## 🙏 Acknowledgments
 
-Built with [LlamaIndex](https://docs.llamaindex.ai) and [LlamaDeploy](https://github.com/run-llama/llama_deploy).
+Built with:
+- [Next.js](https://nextjs.org/) - React framework
+- [Pinecone](https://www.pinecone.io/) - Vector database
+- [HuggingFace](https://huggingface.co/) - Embeddings
+- [Google Gemini](https://ai.google.dev/) - Language model
+- [Drizzle ORM](https://orm.drizzle.team/) - Database toolkit
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+
+---
+
+**🎉 Happy building!** If you have questions or need help, please open an issue or start a discussion.
