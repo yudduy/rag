@@ -128,7 +128,15 @@ export async function POST(request: Request) {
                 relevanceScore: doc.relevance_score,
                 index: idx + 1
               })),
-              totalFound: results.length
+              totalFound: results.length,
+              // Add citation metadata for UI
+              citations: results.map((doc, idx) => ({
+                id: doc.chunkId || `${doc.source}_${idx}`,
+                filename: doc.source,
+                snippet: doc.snippet || doc.content.substring(0, 120) + '...',
+                page: doc.page,
+                index: idx + 1
+              }))
             };
           } catch (error) {
             console.error("Document search error:", error);

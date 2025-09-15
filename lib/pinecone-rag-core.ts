@@ -190,19 +190,27 @@ export class PineconeRAGCore {
       const embeddings = await this.embeddings.embedTexts(texts);
 
       // Prepare vectors for Pinecone
-      const vectors = docs.map((doc, index) => ({
-        id: `${userId}_${filename}_${index}`,
-        values: embeddings[index],
-        metadata: {
-          content: doc.pageContent,
-          source: filename,
-          chunk_index: index,
-          total_chunks: docs.length,
-          file_type: fileType,
-          user_id: userId,
-          upload_date: new Date().toISOString(),
-        },
-      }));
+      const vectors = docs.map((doc, index) => {
+        // Estimate page number for PDFs (rough approximation)
+        const estimatedPage = fileType === 'pdf' 
+          ? Math.floor((index / docs.length) * 10) + 1 // Simple estimation
+          : null;
+
+        return {
+          id: `${userId}_${filename}_${index}`,
+          values: embeddings[index],
+          metadata: {
+            content: doc.pageContent,
+            source: filename,
+            chunk_index: index,
+            total_chunks: docs.length,
+            file_type: fileType,
+            user_id: userId,
+            upload_date: new Date().toISOString(),
+            page: estimatedPage,
+          },
+        };
+      });
 
       // Upsert to Pinecone with user namespace
       const namespace = this.getUserNamespace(userId);
@@ -264,6 +272,9 @@ export class PineconeRAGCore {
     source: string;
     relevance_score: number;
     metadata: any;
+    snippet: string;
+    page: number | null;
+    chunkId: string;
   }>> {
     if (!this.index) {
       await this.initializeIndex();
@@ -297,6 +308,10 @@ export class PineconeRAGCore {
           source: match.metadata?.source || '',
           relevance_score: match.score || 0,
           metadata: match.metadata || {},
+          // Add citation-specific fields
+          snippet: this.createSnippet(match.metadata?.content || ''),
+          page: match.metadata?.page || null,
+          chunkId: match.id || '',
         })) || [];
 
       return results.sort((a: any, b: any) => b.relevance_score - a.relevance_score);
@@ -305,6 +320,29 @@ export class PineconeRAGCore {
       console.error("Error retrieving documents:", error);
       return [];
     }
+  }
+
+  /**
+   * Create a snippet from content for citation display
+   */
+  private createSnippet(content: string, maxLength: number = 120): string {
+    if (!content) return '';
+    
+    // Remove excessive whitespace and newlines
+    const cleaned = content.replace(/\s+/g, ' ').trim();
+    
+    // Truncate to maxLength and add ellipsis if needed
+    if (cleaned.length <= maxLength) return cleaned;
+    
+    // Find last complete word within limit
+    const truncated = cleaned.substring(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(' ');
+    
+    if (lastSpace > maxLength * 0.8) {
+      return truncated.substring(0, lastSpace) + '...';
+    }
+    
+    return truncated + '...';
   }
 
   /**

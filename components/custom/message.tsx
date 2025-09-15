@@ -8,6 +8,7 @@ import { BotIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
+import { CitationList, Citation } from "./citation-badge";
 import { AuthorizePayment } from "../flights/authorize-payment";
 import { DisplayBoardingPass } from "../flights/boarding-pass";
 import { CreateReservation } from "../flights/create-reservation";
@@ -15,6 +16,24 @@ import { FlightStatus } from "../flights/flight-status";
 import { ListFlights } from "../flights/list-flights";
 import { SelectSeats } from "../flights/select-seats";
 import { VerifyPayment } from "../flights/verify-payment";
+
+// Extract citations from tool invocations
+function extractCitations(toolInvocations: Array<ToolInvocation> | undefined): Citation[] {
+  if (!toolInvocations) return [];
+  
+  const citations: Citation[] = [];
+  
+  toolInvocations.forEach((invocation) => {
+    if (invocation.toolName === "searchDocuments" && invocation.state === "result") {
+      const result = invocation.result as any;
+      if (result.citations && Array.isArray(result.citations)) {
+        citations.push(...result.citations);
+      }
+    }
+  });
+  
+  return citations;
+}
 
 export const Message = ({
   chatId,
@@ -43,6 +62,12 @@ export const Message = ({
         {content && typeof content === "string" && (
           <div className="text-zinc-800 dark:text-zinc-300 flex flex-col gap-4">
             <Markdown>{content}</Markdown>
+            {/* Show citations for assistant messages */}
+            {role === "assistant" && (
+              <div className="mt-2">
+                <CitationList citations={extractCitations(toolInvocations)} />
+              </div>
+            )}
           </div>
         )}
 
