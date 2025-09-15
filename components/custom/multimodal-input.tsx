@@ -22,14 +22,14 @@ import { IndexingStatus } from "./indexing-pill";
 
 const suggestedActions = [
   {
-    title: "Help me book a flight",
-    label: "from San Francisco to London",
-    action: "Help me book a flight from San Francisco to London",
+    title: "Analyze my research papers",
+    label: "Please upload documents first",
+    action: "I'd like to analyze my research papers.",
   },
   {
-    title: "What is the status",
-    label: "of flight BA142 flying tmrw?",
-    action: "What is the status of flight BA142 flying tmrw?",
+    title: "Search my documents",
+    label: "Please upload documents first", 
+    action: "I want to search through my documents for specific information. Could you help me upload some documents first?",
   },
 ];
 
@@ -157,24 +157,49 @@ export function MultimodalInput({
       return;
     }
 
+    // Determine if this is a document for RAG processing
+    const documentTypes = ['text/plain', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const isDocument = documentTypes.includes(file.type);
+    
+    // Route to appropriate endpoint
+    const endpoint = isDocument ? '/api/documents/upload' : '/api/files/upload';
+    
     const formData = new FormData();
     formData.append("file", file);
 
     try {
-      const response = await fetch(`/api/files/upload`, {
+      const response = await fetch(endpoint, {
         method: "POST",
         body: formData,
       });
 
       if (response.ok) {
         const data = await response.json();
-        const { url, pathname, contentType } = data;
-
-        return {
-          url,
-          name: pathname,
-          contentType: contentType,
-        };
+        
+        if (isDocument) {
+          // For documents, show success message and update indexing status
+          toast.success(`Document "${file.name}" uploaded and indexed successfully!`);
+          updateIndexingStatus({
+            status: 'completed',
+            filename: file.name,
+            chunks: data.indexing?.chunks || 0
+          });
+          
+          // Return a reference for chat context
+          return {
+            url: `document:${data.document.id}`,
+            name: file.name,
+            contentType: file.type,
+          };
+        } else {
+          // For files (images, etc.), return blob URL
+          const { url, pathname, contentType } = data;
+          return {
+            url,
+            name: pathname,
+            contentType: contentType,
+          };
+        }
       } else {
         const { error } = await response.json();
         toast.error(error);
