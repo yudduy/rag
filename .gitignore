@@ -1,95 +1,38 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-venv/
-.venv/
-.env
-.venv
-pip-log.txt
-pip-delete-this-directory.txt
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.log
-.git
-.mypy_cache
-.pytest_cache
-.hypothesis
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
+# testing
+/coverage
 
-# Node.js
-node_modules/
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-*.tgz
-*.tar.gz
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# local env files
+.env*.local
 
-# OS
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Application specific
-src/storage/
-*.log
-.env
-.env.local
-.env.production
-temp/
-tmp/
-
-# UV
-uv.lock
+# vercel
 .vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Workaround for pdf-parse build issue
+/test/

@@ -208,7 +208,7 @@ export async function getDocumentsByUserId({ userId }: { userId: string }): Prom
       .where(eq(document.userId, userId))
       .orderBy(desc(document.createdAt));
   } catch (error) {
-    console.error("Failed to get documents by user from database");
+    console.error("Failed to get documents by user from database:", error);
     throw error;
   }
 }

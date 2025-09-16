@@ -307,7 +307,6 @@ rag/
 │   └── api/               # API endpoints
 ├── components/            # React components
 │   ├── custom/           # App-specific components
-│   ├── flights/          # Demo flight components
 │   └── ui/               # Reusable UI components
 ├── lib/                  # Core libraries
 │   ├── pinecone-rag-core.ts    # Pinecone RAG implementation

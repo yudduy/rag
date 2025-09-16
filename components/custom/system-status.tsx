@@ -21,23 +21,23 @@ interface SystemStatusProps {
 const statusConfig = {
   healthy: {
     icon: "✅",
-    color: "text-green-600",
-    bgColor: "bg-green-50 border-green-200"
+    color: "text-green-600 dark:text-green-400",
+    bgColor: "bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800"
   },
   warning: {
     icon: "⚠️",
-    color: "text-yellow-600", 
-    bgColor: "bg-yellow-50 border-yellow-200"
+    color: "text-yellow-600 dark:text-yellow-400", 
+    bgColor: "bg-yellow-50 dark:bg-yellow-950/50 border-yellow-200 dark:border-yellow-800"
   },
   error: {
     icon: "❌",
-    color: "text-red-600",
-    bgColor: "bg-red-50 border-red-200"
+    color: "text-red-600 dark:text-red-400",
+    bgColor: "bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800"
   },
   unknown: {
     icon: "❓",
-    color: "text-gray-600",
-    bgColor: "bg-gray-50 border-gray-200"
+    color: "text-muted-foreground",
+    bgColor: "bg-muted/50 border-border"
   }
 };
 

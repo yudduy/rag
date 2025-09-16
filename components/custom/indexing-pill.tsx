@@ -40,7 +40,11 @@ export function IndexingPill({ status, onDismiss }: IndexingPillProps) {
 
   useEffect(() => {
     if (status) {
-      setIsVisible(true);
+      // Only show animation during active indexing states
+      const activeStates = ['parsing', 'chunking', 'embedding', 'indexing'];
+      const shouldShow = activeStates.includes(status.status) || status.status === 'completed';
+      
+      setIsVisible(shouldShow);
       setShouldDismiss(false);
       
       // Auto-dismiss after 5 seconds when completed

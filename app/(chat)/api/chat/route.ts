@@ -47,6 +47,39 @@ export async function POST(request: Request) {
     (message) => message.content.length > 0,
   );
 
+  // Critical: Ensure we have at least one message for Gemini
+  if (coreMessages.length === 0) {
+    console.error("No valid messages after filtering", { originalMessages: messages });
+    return new Response(JSON.stringify({
+      error: "No valid messages provided",
+      errorDetails: {
+        type: "validation",
+        title: "Invalid Message Content",
+        message: "No valid messages were provided for processing. Please ensure your message contains text content.",
+        details: {
+          code: "EMPTY_MESSAGES",
+          timestamp: new Date().toISOString(),
+          endpoint: "/api/chat",
+          userId: session.user?.id
+        },
+        suggestions: [
+          "Try typing a text message",
+          "Ensure your message isn't empty",
+          "If uploading documents, wait for indexing to complete first"
+        ],
+        technicalInfo: [
+          { label: "Original Messages", value: messages.length.toString() },
+          { label: "Filtered Messages", value: coreMessages.length.toString() }
+        ],
+        canRetry: true,
+        canReport: true
+      }
+    }), { 
+      status: 400,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
+
   // Get the latest user message for RAG processing
   const latestUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
   
@@ -71,7 +104,8 @@ export async function POST(request: Request) {
       }
     } catch (ragError) {
       console.error('RAG retrieval error:', ragError);
-      // Continue without RAG context
+      // Continue without RAG context - this enables progressive enhancement
+      // Users can still chat even if some documents are still indexing
     }
   }
 
@@ -108,7 +142,12 @@ export async function POST(request: Request) {
        ${isResearchPaperQuery ? `- The user is asking about research papers or document analysis, but no documents are currently uploaded
        - Politely ask them to upload their research papers first using the Document Manager (📁 icon in the navbar)
        - Explain that once they upload their papers, you can help analyze them, extract key findings, compare studies, and answer specific questions about their content
-       - Do not attempt to provide general information about research papers - focus on getting them to upload their specific documents for analysis` : `- If users want to upload documents for context, let them know they can use the document upload feature`}`;
+       - Do not attempt to provide general information about research papers - focus on getting them to upload their specific documents for analysis` : `- If users want to upload documents for context, let them know they can use the document upload feature`}
+       
+       CONCURRENT OPERATIONS HANDLING:
+       - If documents are currently being indexed, inform the user that some documents may still be processing
+       - You can still answer questions based on already-indexed documents
+       - Let users know that more comprehensive answers will be available once all documents are fully indexed`;
 
   const result = await streamText({
     model: geminiFlashModel,

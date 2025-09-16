@@ -57,6 +57,7 @@ export class PineconeRAGCore {
   private textSplitter: RecursiveCharacterTextSplitter;
   private indexName: string;
   private index: any = null;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
     if (!process.env.PINECONE_API_KEY) {
@@ -75,8 +76,16 @@ export class PineconeRAGCore {
       chunkOverlap: RAG_CONFIG.chunk_overlap,
       separators: ["\n\n", "\n", ". ", " ", ""],
     });
+  }
 
-    this.initializeIndex();
+  /**
+   * Ensure index is initialized (lazy initialization)
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initializationPromise) {
+      this.initializationPromise = this.initializeIndex();
+    }
+    return this.initializationPromise;
   }
 
   /**
@@ -171,9 +180,7 @@ export class PineconeRAGCore {
       }
 
       // Ensure index is ready
-      if (!this.index) {
-        await this.initializeIndex();
-      }
+      await this.ensureInitialized();
 
       // Split document into chunks
       const docs = await this.textSplitter.createDocuments([content], [
@@ -276,9 +283,7 @@ export class PineconeRAGCore {
     page: number | null;
     chunkId: string;
   }>> {
-    if (!this.index) {
-      await this.initializeIndex();
-    }
+    await this.ensureInitialized();
 
     try {
       const maxDocs = options.maxDocs || RAG_CONFIG.max_retrieval_docs;
@@ -354,9 +359,7 @@ export class PineconeRAGCore {
     file_type: string;
     upload_date: string;
   }>> {
-    if (!this.index) {
-      await this.initializeIndex();
-    }
+    await this.ensureInitialized();
 
     try {
       const namespace = this.getUserNamespace(userId);
@@ -409,9 +412,7 @@ export class PineconeRAGCore {
    * Delete user's document
    */
   async deleteDocument(filename: string, userId: string): Promise<boolean> {
-    if (!this.index) {
-      await this.initializeIndex();
-    }
+    await this.ensureInitialized();
 
     try {
       const namespace = this.getUserNamespace(userId);
@@ -450,10 +451,11 @@ export class PineconeRAGCore {
    */
   async getStatus() {
     try {
-      const indexStats = this.index ? await this.index.describeIndexStats() : null;
+      await this.ensureInitialized();
+      const indexStats = await this.index.describeIndexStats();
       
       return {
-        pinecone_connected: !!this.index,
+        pinecone_connected: true,
         index_name: this.indexName,
         embedding_model: this.embeddings.getModelName(),
         embedding_dimensions: this.embeddings.getDimensions(),
@@ -465,6 +467,9 @@ export class PineconeRAGCore {
       return {
         pinecone_connected: false,
         error: error instanceof Error ? error.message : 'Unknown error',
+        index_name: this.indexName,
+        embedding_model: this.embeddings.getModelName(),
+        embedding_dimensions: this.embeddings.getDimensions(),
         config: RAG_CONFIG,
       };
     }

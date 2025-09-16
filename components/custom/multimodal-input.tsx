@@ -179,10 +179,13 @@ export function MultimodalInput({
         if (isDocument) {
           // For documents, show success message and update indexing status
           toast.success(`Document "${file.name}" uploaded and indexed successfully!`);
+          
+          // Update indexing status with proper validation
+          const chunks = data.indexing?.chunks;
           updateIndexingStatus({
             status: 'completed',
             filename: file.name,
-            chunks: data.indexing?.chunks || 0
+            chunks: typeof chunks === 'number' && !isNaN(chunks) ? chunks : 0
           });
           
           // Return a reference for chat context
