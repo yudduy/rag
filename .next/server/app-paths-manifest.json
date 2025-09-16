@@ -1,8 +1,7 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js",
-  "/(auth)/register/page": "app/(auth)/register/page.js",
   "/(chat)/page": "app/(chat)/page.js",
-  "/(chat)/api/files/upload/route": "app/(chat)/api/files/upload/route.js",
-  "/_not-found/page": "app/_not-found/page.js"
+  "/(chat)/api/history/route": "app/(chat)/api/history/route.js",
+  "/(chat)/api/chat/route": "app/(chat)/api/chat/route.js",
+  "/(chat)/api/documents/upload/route": "app/(chat)/api/documents/upload/route.js",
+  "/(chat)/api/documents/[id]/route": "app/(chat)/api/documents/[id]/route.js"
 }

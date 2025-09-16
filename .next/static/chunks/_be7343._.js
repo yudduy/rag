@@ -2358,6 +2358,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/node_modules/sonner/dist/index.mjs [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$icons$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/components/custom/icons.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/components/ui/button.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$error$2d$panel$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_import__("[project]/components/custom/error-panel.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$swr$2f$dist$2f$index$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__ = __turbopack_import__("[project]/node_modules/swr/dist/index/index.mjs [app-client] (ecmascript) <locals>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$swr$2f$dist$2f$_internal$2f$config$2d$context$2d$client$2d$BoS53ST9$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__j__as__mutate$3e$__ = __turbopack_import__("[project]/node_modules/swr/dist/_internal/config-context-client-BoS53ST9.mjs [app-client] (ecmascript) <export j as mutate>");
 "__TURBOPACK__ecmascript__hoisting__location__";
@@ -2369,11 +2370,13 @@ var _s = __turbopack_refresh__.signature();
 ;
 ;
 ;
+;
 const fetcher = (url)=>fetch(url).then((res)=>res.json());
 function DocumentManager({ isOpen, onClose }) {
     _s();
     const [isUploading, setIsUploading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [dragActive, setDragActive] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [currentError, setCurrentError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const fileInputRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRef"])(null);
     // Fetch user's documents
     const { data, error, isLoading } = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$swr$2f$dist$2f$index$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["default"])(isOpen ? "/api/documents/upload" : null, fetcher, {
@@ -2409,10 +2412,18 @@ function DocumentManager({ isOpen, onClose }) {
             });
             const result = await response.json();
             if (!response.ok) {
-                throw new Error(result.error || "Upload failed");
+                // Check if we have detailed error information
+                if (result.errorDetails) {
+                    setCurrentError(result.errorDetails);
+                } else {
+                    // Fallback to basic error display
+                    __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].error(result.error || "Upload failed");
+                }
+                return;
             }
             if (result.success) {
                 __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].success(`${file.name} uploaded and indexed successfully!`);
+                setCurrentError(null); // Clear any previous errors
                 // Refresh documents list
                 (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$swr$2f$dist$2f$_internal$2f$config$2d$context$2d$client$2d$BoS53ST9$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__j__as__mutate$3e$__["mutate"])("/api/documents/upload");
                 // Clear file input
@@ -2420,11 +2431,33 @@ function DocumentManager({ isOpen, onClose }) {
                     fileInputRef.current.value = "";
                 }
             } else {
-                throw new Error("Upload failed");
+                __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].error("Upload failed");
             }
         } catch (error) {
             console.error("Upload error:", error);
-            __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].error(error instanceof Error ? error.message : "Upload failed");
+            // Create a generic error for network/unexpected issues
+            setCurrentError({
+                type: "network",
+                title: "Network Error",
+                message: "Failed to connect to the server",
+                details: {
+                    code: "NETWORK_ERROR",
+                    timestamp: new Date().toISOString()
+                },
+                suggestions: [
+                    "Check your internet connection",
+                    "Try again in a few moments",
+                    "Refresh the page and retry"
+                ],
+                technicalInfo: [
+                    {
+                        label: "Error",
+                        value: error instanceof Error ? error.message : "Unknown error"
+                    }
+                ],
+                canRetry: true,
+                canReport: false
+            });
         } finally{
             setIsUploading(false);
         }
@@ -2497,7 +2530,7 @@ function DocumentManager({ isOpen, onClose }) {
                             children: "Document Manager"
                         }, void 0, false, {
                             fileName: "[project]/components/custom/document-manager.tsx",
-                            lineNumber: 171,
+                            lineNumber: 202,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2507,18 +2540,40 @@ function DocumentManager({ isOpen, onClose }) {
                             children: "✕"
                         }, void 0, false, {
                             fileName: "[project]/components/custom/document-manager.tsx",
-                            lineNumber: 172,
+                            lineNumber: 203,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/custom/document-manager.tsx",
-                    lineNumber: 170,
+                    lineNumber: 201,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "p-6",
                     children: [
+                        currentError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$error$2d$panel$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ErrorPanel"], {
+                            error: currentError,
+                            isVisible: !!currentError,
+                            onRetry: ()=>{
+                                setCurrentError(null);
+                                // Retry with the last file if available
+                                const input = fileInputRef.current;
+                                if (input?.files && input.files.length > 0) {
+                                    handleFileUpload(input.files);
+                                }
+                            },
+                            onDismiss: ()=>setCurrentError(null),
+                            onReport: ()=>{
+                                // Could implement error reporting here
+                                console.log("Error reported:", currentError);
+                                __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$sonner$2f$dist$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__["toast"].success("Error report sent to development team");
+                            }
+                        }, void 0, false, {
+                            fileName: "[project]/components/custom/document-manager.tsx",
+                            lineNumber: 211,
+                            columnNumber: 13
+                        }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: `border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive ? "border-primary bg-primary/5" : "border-gray-300 hover:border-gray-400"} ${isUploading ? "opacity-50 pointer-events-none" : ""}`,
                             onDragEnter: handleDrag,
@@ -2528,24 +2583,31 @@ function DocumentManager({ isOpen, onClose }) {
                             children: isUploading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex flex-col items-center gap-2",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$icons$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoaderIcon"], {
-                                        size: 24
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "animate-spin",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$icons$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoaderIcon"], {
+                                            size: 24
+                                        }, void 0, false, {
+                                            fileName: "[project]/components/custom/document-manager.tsx",
+                                            lineNumber: 246,
+                                            columnNumber: 19
+                                        }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                        lineNumber: 192,
+                                        lineNumber: 245,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         children: "Uploading and indexing..."
                                     }, void 0, false, {
                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                        lineNumber: 193,
+                                        lineNumber: 248,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/custom/document-manager.tsx",
-                                lineNumber: 191,
+                                lineNumber: 244,
                                 columnNumber: 15
                             }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex flex-col items-center gap-4",
@@ -2554,7 +2616,7 @@ function DocumentManager({ isOpen, onClose }) {
                                         size: 32
                                     }, void 0, false, {
                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                        lineNumber: 197,
+                                        lineNumber: 252,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2564,7 +2626,7 @@ function DocumentManager({ isOpen, onClose }) {
                                                 children: "Drop files here or click to upload"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/custom/document-manager.tsx",
-                                                lineNumber: 199,
+                                                lineNumber: 254,
                                                 columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -2572,13 +2634,13 @@ function DocumentManager({ isOpen, onClose }) {
                                                 children: "Supports TXT, MD, PDF, DOCX (max 10MB)"
                                             }, void 0, false, {
                                                 fileName: "[project]/components/custom/document-manager.tsx",
-                                                lineNumber: 200,
+                                                lineNumber: 255,
                                                 columnNumber: 19
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                        lineNumber: 198,
+                                        lineNumber: 253,
                                         columnNumber: 17
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2589,25 +2651,25 @@ function DocumentManager({ isOpen, onClose }) {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/components/custom/document-manager.tsx",
-                                                lineNumber: 208,
+                                                lineNumber: 263,
                                                 columnNumber: 19
                                             }, this),
                                             "Choose Files"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                        lineNumber: 204,
+                                        lineNumber: 259,
                                         columnNumber: 17
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/components/custom/document-manager.tsx",
-                                lineNumber: 196,
+                                lineNumber: 251,
                                 columnNumber: 15
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/components/custom/document-manager.tsx",
-                            lineNumber: 179,
+                            lineNumber: 232,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -2618,7 +2680,7 @@ function DocumentManager({ isOpen, onClose }) {
                             onChange: (e)=>e.target.files && handleFileUpload(e.target.files)
                         }, void 0, false, {
                             fileName: "[project]/components/custom/document-manager.tsx",
-                            lineNumber: 215,
+                            lineNumber: 270,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2633,17 +2695,24 @@ function DocumentManager({ isOpen, onClose }) {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                    lineNumber: 225,
+                                    lineNumber: 280,
                                     columnNumber: 13
                                 }, this),
                                 isLoading ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex items-center justify-center py-8",
                                     children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$icons$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoaderIcon"], {
-                                            size: 24
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            className: "animate-spin",
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$custom$2f$icons$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["LoaderIcon"], {
+                                                size: 24
+                                            }, void 0, false, {
+                                                fileName: "[project]/components/custom/document-manager.tsx",
+                                                lineNumber: 287,
+                                                columnNumber: 19
+                                            }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                            lineNumber: 231,
+                                            lineNumber: 286,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2651,27 +2720,27 @@ function DocumentManager({ isOpen, onClose }) {
                                             children: "Loading documents..."
                                         }, void 0, false, {
                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                            lineNumber: 232,
+                                            lineNumber: 289,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                    lineNumber: 230,
+                                    lineNumber: 285,
                                     columnNumber: 15
                                 }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "text-center py-8 text-red-500",
                                     children: "Failed to load documents"
                                 }, void 0, false, {
                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                    lineNumber: 235,
+                                    lineNumber: 292,
                                     columnNumber: 15
                                 }, this) : documents.length === 0 ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "text-center py-8 text-muted-foreground",
                                     children: "No documents uploaded yet"
                                 }, void 0, false, {
                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                    lineNumber: 239,
+                                    lineNumber: 296,
                                     columnNumber: 15
                                 }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "space-y-3 max-h-64 overflow-y-auto",
@@ -2685,7 +2754,7 @@ function DocumentManager({ isOpen, onClose }) {
                                                             size: 20
                                                         }, void 0, false, {
                                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                                            lineNumber: 250,
+                                                            lineNumber: 307,
                                                             columnNumber: 23
                                                         }, this),
                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2697,7 +2766,7 @@ function DocumentManager({ isOpen, onClose }) {
                                                                     children: doc.originalName
                                                                 }, void 0, false, {
                                                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                                                    lineNumber: 252,
+                                                                    lineNumber: 309,
                                                                     columnNumber: 25
                                                                 }, this),
                                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -2707,7 +2776,7 @@ function DocumentManager({ isOpen, onClose }) {
                                                                             children: formatFileSize(doc.fileSize)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                                                            lineNumber: 256,
+                                                                            lineNumber: 313,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -2717,32 +2786,32 @@ function DocumentManager({ isOpen, onClose }) {
                                                                             ]
                                                                         }, void 0, true, {
                                                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                                                            lineNumber: 257,
+                                                                            lineNumber: 314,
                                                                             columnNumber: 27
                                                                         }, this),
                                                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                                             children: formatDate(doc.createdAt)
                                                                         }, void 0, false, {
                                                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                                                            lineNumber: 258,
+                                                                            lineNumber: 315,
                                                                             columnNumber: 27
                                                                         }, this)
                                                                     ]
                                                                 }, void 0, true, {
                                                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                                                    lineNumber: 255,
+                                                                    lineNumber: 312,
                                                                     columnNumber: 25
                                                                 }, this)
                                                             ]
                                                         }, void 0, true, {
                                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                                            lineNumber: 251,
+                                                            lineNumber: 308,
                                                             columnNumber: 23
                                                         }, this)
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                                    lineNumber: 249,
+                                                    lineNumber: 306,
                                                     columnNumber: 21
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
@@ -2754,50 +2823,50 @@ function DocumentManager({ isOpen, onClose }) {
                                                         size: 16
                                                     }, void 0, false, {
                                                         fileName: "[project]/components/custom/document-manager.tsx",
-                                                        lineNumber: 268,
+                                                        lineNumber: 325,
                                                         columnNumber: 23
                                                     }, this)
                                                 }, void 0, false, {
                                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                                    lineNumber: 262,
+                                                    lineNumber: 319,
                                                     columnNumber: 21
                                                 }, this)
                                             ]
                                         }, doc.id, true, {
                                             fileName: "[project]/components/custom/document-manager.tsx",
-                                            lineNumber: 245,
+                                            lineNumber: 302,
                                             columnNumber: 19
                                         }, this))
                                 }, void 0, false, {
                                     fileName: "[project]/components/custom/document-manager.tsx",
-                                    lineNumber: 243,
+                                    lineNumber: 300,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/components/custom/document-manager.tsx",
-                            lineNumber: 224,
+                            lineNumber: 279,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/components/custom/document-manager.tsx",
-                    lineNumber: 177,
+                    lineNumber: 208,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/components/custom/document-manager.tsx",
-            lineNumber: 169,
+            lineNumber: 200,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/components/custom/document-manager.tsx",
-        lineNumber: 168,
+        lineNumber: 199,
         columnNumber: 5
     }, this);
 }
-_s(DocumentManager, "EJaYXYbnvupdTofRBS0pN5bziAw=", false, function() {
+_s(DocumentManager, "BmuSljs/fzF5YQqEiy5NDWtNVag=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$swr$2f$dist$2f$index$2f$index$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$locals$3e$__["default"]
     ];

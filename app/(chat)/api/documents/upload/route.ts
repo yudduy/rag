@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 
 import { auth } from "@/app/(auth)/auth";
-import { createDocument, updateDocumentChunkCount } from "@/db/queries";
+import { createDocument, updateDocumentChunkCount, getDocumentsByUserId } from "@/db/queries";
 import { DocumentProcessor } from "@/lib/document-processor";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
+import { DocumentTitleGenerator } from "@/lib/document-title-generator";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
@@ -340,13 +341,38 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get RAG core status and user documents
+    // Get user documents from database (single source of truth)
+    const documents = await getDocumentsByUserId({ userId: session.user.id });
+
+    // Get RAG core status for additional info
     const ragCore = getPineconeRAGCore();
-    const ragDocuments = await ragCore.getUserDocuments(session.user.id);
     const ragStatus = await ragCore.getStatus();
 
     return NextResponse.json({
-      documents: ragDocuments,
+      documents: documents.map(doc => {
+        // Use original filename as display title (cleaned up)
+        const displayTitle = (doc.originalName || doc.filename || 'Untitled Document')
+          .replace(/\.[^.]+$/, '') // Remove extension
+          .replace(/[_-]/g, ' ') // Replace underscores and hyphens with spaces
+          .replace(/([a-z])([A-Z])/g, '$1 $2') // Add spaces before capital letters
+          .split(' ')
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+          .join(' ')
+          .trim();
+
+        return {
+          id: doc.id,
+          filename: doc.filename,
+          originalName: doc.originalName,
+          fileType: doc.fileType,
+          fileSize: doc.fileSize,
+          chunkCount: doc.chunkCount,
+          status: doc.status,
+          createdAt: doc.createdAt,
+          updatedAt: doc.updatedAt,
+          displayTitle
+        };
+      }),
       status: ragStatus,
     });
 

@@ -64,6 +64,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: errorMessage }, { status: 400 });
     }
 
+    // Check if Vercel Blob is configured
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return NextResponse.json({ 
+        error: "File upload service not configured. Please configure BLOB_READ_WRITE_TOKEN environment variable." 
+      }, { status: 503 });
+    }
+
     const originalFilename = file.name;
     const sanitizedFilename = sanitizeFilename(originalFilename);
     const fileBuffer = await file.arrayBuffer();
@@ -75,9 +82,13 @@ export async function POST(request: Request) {
 
       return NextResponse.json(data);
     } catch (error) {
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      console.error("Vercel Blob upload error:", error);
+      return NextResponse.json({ 
+        error: "Upload failed. Please check your Vercel Blob configuration." 
+      }, { status: 500 });
     }
   } catch (error) {
+    console.error("File upload processing error:", error);
     return NextResponse.json(
       { error: "Failed to process request" },
       { status: 500 },

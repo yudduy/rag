@@ -20,28 +20,26 @@ export const Overview = () => {
           <MessageIcon />
         </p>
         <p>
-          This is an open source Chatbot template powered by the Google Gemini
-          model built with Next.js and the AI SDK by Vercel. It uses the{" "}
+          This is an experimental RAG (Retrieval-Augmented Generation) chatbot that combines document intelligence with general AI assistance. Upload your documents (PDF, DOCX, MD, TXT) and chat with them using semantic search, powered by{" "}
           <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-            streamText
+            Pinecone
           </code>{" "}
-          function in the server and the{" "}
+          vector storage,{" "}
           <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
-            useChat
+            HuggingFace
           </code>{" "}
-          hook on the client to create a seamless chat experience.
+          embeddings, and{" "}
+          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
+            Google Gemini
+          </code>
+          .
         </p>
         <p>
-          {" "}
-          You can learn more about the AI SDK by visiting the{" "}
-          <Link
-            className="text-blue-500 dark:text-blue-400"
-            href="https://sdk.vercel.ai/docs"
-            target="_blank"
-          >
-            Docs
-          </Link>
-          .
+          Start by uploading documents using the{" "}
+          <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
+            📁 Document Manager
+          </code>{" "}
+          in the navbar, then ask questions about your content. The AI can also help with general tasks and provide weather information.
         </p>
       </div>
     </motion.div>

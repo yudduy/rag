@@ -19,6 +19,7 @@ interface Document {
   chunkCount: number;
   status: string;
   createdAt: string;
+  displayTitle?: string;
   metadata?: {
     wordCount: number;
     processingTime: number;
@@ -186,8 +187,13 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + " " + sizes[i];
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
+  const formatDate = (dateString: string | null | undefined) => {
+    if (!dateString) return "Unknown date";
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid date";
+    
+    return date.toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
       hour: "2-digit",
@@ -271,9 +277,10 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
                 <Button
                   onClick={() => fileInputRef.current?.click()}
                   disabled={isUploading}
+                  className="flex items-center gap-2"
                 >
                   <UploadIcon size={16} />
-                  Choose Files
+                  <span>Choose Files</span>
                 </Button>
               </div>
             )}
@@ -318,12 +325,12 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <FileIcon size={20} />
                       <div className="min-w-0 flex-1">
-                        <p className="font-medium truncate" title={doc.originalName}>
-                          {doc.originalName}
+                        <p className="font-medium truncate" title={doc.displayTitle || doc.originalName}>
+                          {doc.displayTitle || doc.originalName}
                         </p>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>{formatFileSize(doc.fileSize)}</span>
-                          <span>{doc.chunkCount} chunks</span>
+                          <span>{doc.chunkCount || 0} chunks</span>
                           <span>{formatDate(doc.createdAt)}</span>
                         </div>
                       </div>
