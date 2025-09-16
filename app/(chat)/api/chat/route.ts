@@ -10,6 +10,7 @@ import {
 } from "@/db/queries";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 import { generateUUID } from "@/lib/utils";
+import { ragDemoManager } from "@/lib/rag-demonstration-manager";
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
@@ -83,34 +84,167 @@ export async function POST(request: Request) {
   // Get the latest user message for RAG processing
   const latestUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
   
-  // Retrieve relevant documents using RAG
+  // Create RAG demonstration session
+  const ragSessionId = generateUUID();
+  let ragDemoSession = null;
+  
+  if (session.user?.id && latestUserMessage) {
+    ragDemoSession = ragDemoManager.createSession(ragSessionId, session.user.id, latestUserMessage);
+  }
+  
+  // Retrieve relevant documents using RAG with demonstration tracking
   let ragContext = '';
   let ragSources: Array<{content: string, source: string, relevance_score: number}> = [];
   
   if (session.user?.id && latestUserMessage) {
     try {
+      // Step 1: Query Embedding
+      ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'processing', {
+        originalQuery: latestUserMessage,
+        processedQuery: latestUserMessage,
+        embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2',
+        embeddingDimensions: 384
+      });
+
       const ragCore = getPineconeRAGCore();
+      
+      // Generate embedding (this is already done internally, but we track it)
+      const embeddingStartTime = Date.now();
+      const queryEmbedding = await ragCore.embeddings.embedText(latestUserMessage);
+      const embeddingDuration = Date.now() - embeddingStartTime;
+      
+      ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'completed', {
+        originalQuery: latestUserMessage,
+        processedQuery: latestUserMessage,
+        embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2',
+        embeddingDimensions: 384,
+        embeddingVector: queryEmbedding.slice(0, 8), // First 8 dimensions for preview
+        embeddingPreview: queryEmbedding.slice(0, 8).map(v => v.toFixed(4)).join(', ')
+      });
+
+      // Step 2: Document Retrieval
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'processing', {
+        searchQuery: latestUserMessage,
+        namespace: `user-${session.user.id}`,
+        searchParams: {
+          topK: 5,
+          threshold: 0.1
+        }
+      });
+
+      const retrievalStartTime = Date.now();
       const retrievedDocs = await ragCore.retrieveDocuments(
         latestUserMessage,
         session.user.id,
-        { maxDocs: 3, threshold: 0.7 }
+        { maxDocs: 5, threshold: 0.1 }
       );
+      const retrievalDuration = Date.now() - retrievalStartTime;
       
+      console.log(`📄 Retrieved ${retrievedDocs.length} documents:`, 
+        retrievedDocs.map(d => ({ source: d.source, score: d.relevance_score, contentLength: d.content.length }))
+      );
+
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'completed', {
+        searchQuery: latestUserMessage,
+        namespace: `user-${session.user.id}`,
+        searchParams: {
+          topK: 5,
+          threshold: 0.1
+        },
+        totalResults: retrievedDocs.length,
+        filteredResults: retrievedDocs.length,
+        documents: retrievedDocs.map(doc => ({
+          id: doc.chunkId || generateUUID(),
+          source: doc.source,
+          content: doc.content,
+          snippet: doc.snippet,
+          relevanceScore: doc.relevance_score,
+          metadata: {
+            page: doc.page,
+            chunkId: doc.chunkId || generateUUID(),
+            fileType: doc.metadata?.file_type || 'unknown',
+            ...doc.metadata
+          }
+        }))
+      });
+
+      // Step 3: Context Assembly
       if (retrievedDocs.length > 0) {
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'processing', {
+          selectedDocuments: retrievedDocs.map(doc => ({
+            id: doc.chunkId || generateUUID(),
+            source: doc.source,
+            content: doc.content,
+            snippet: doc.snippet,
+            relevanceScore: doc.relevance_score,
+            metadata: {
+              page: doc.page,
+              chunkId: doc.chunkId || generateUUID(),
+              fileType: doc.metadata?.file_type || 'unknown',
+              ...doc.metadata
+            }
+          })),
+          assemblyStrategy: 'Relevance-based concatenation'
+        });
+
+        const assemblyStartTime = Date.now();
         ragSources = retrievedDocs;
         ragContext = retrievedDocs
           .map((doc, idx) => `[Source ${idx + 1}: ${doc.source}]\n${doc.content}`)
           .join('\n\n');
+        const assemblyDuration = Date.now() - assemblyStartTime;
+
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'completed', {
+          selectedDocuments: retrievedDocs.map(doc => ({
+            id: doc.chunkId || generateUUID(),
+            source: doc.source,
+            content: doc.content,
+            snippet: doc.snippet,
+            relevanceScore: doc.relevance_score,
+            metadata: {
+              page: doc.page,
+              chunkId: doc.chunkId || generateUUID(),
+              fileType: doc.metadata?.file_type || 'unknown',
+              ...doc.metadata
+            }
+          })),
+          contextLength: ragContext.length,
+          contextPreview: ragContext.substring(0, 500),
+          assemblyStrategy: 'Relevance-based concatenation'
+        });
+        
+        console.log(`✅ RAG context created: ${ragContext.length} characters`);
+      } else {
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'completed', {
+          selectedDocuments: [],
+          contextLength: 0,
+          contextPreview: '',
+          assemblyStrategy: 'No documents selected'
+        });
+        console.log(`❌ No documents retrieved for query: "${latestUserMessage}"`);
       }
     } catch (ragError) {
       console.error('RAG retrieval error:', ragError);
+      
+      // Mark current step as error
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'error', undefined, 
+        ragError instanceof Error ? ragError.message : 'Unknown RAG error'
+      );
+      
       // Continue without RAG context - this enables progressive enhancement
-      // Users can still chat even if some documents are still indexing
     }
   }
 
   // Check if user is asking about research papers or document analysis
   const isResearchPaperQuery = /research\s+papers?|analyze.*papers?|paper.*analysis|document.*analysis|analyze.*research|study.*papers?/i.test(latestUserMessage);
+
+  // Debug RAG context
+  console.log(`🔍 RAG Context Debug:`, {
+    hasContext: !!ragContext,
+    contextLength: ragContext.length,
+    sourcesCount: ragSources.length,
+    contextPreview: ragContext.substring(0, 200) + '...'
+  });
 
   // Build system prompt with RAG context
   const systemPrompt = ragContext 
@@ -149,10 +283,80 @@ export async function POST(request: Request) {
        - You can still answer questions based on already-indexed documents
        - Let users know that more comprehensive answers will be available once all documents are fully indexed`;
 
+  console.log(`🤖 System prompt being sent to LLM:`, {
+    hasRagContext: systemPrompt.includes('DOCUMENT CONTEXT:'),
+    promptLength: systemPrompt.length,
+    promptPreview: systemPrompt.substring(0, 300) + '...'
+  });
+
+  // Handle RAG context injection for Gemini
+  let finalMessages = coreMessages;
+  let finalSystemPrompt = systemPrompt;
+  
+  if (ragContext && coreMessages.length > 0) {
+    // Gemini has issues with large contexts in system prompts
+    // So we inject the context directly into the last user message
+    const lastMessage = coreMessages[coreMessages.length - 1];
+    if (lastMessage.role === 'user') {
+      // Create detailed citation information for each source
+      const citationInfo = ragSources.map((source, idx) => {
+        return `[${idx + 1}] ${source.source} (Relevance: ${(source.relevance_score * 100).toFixed(1)}%)
+Content: ${source.content.substring(0, 150)}${source.content.length > 150 ? '...' : ''}`;
+      }).join('\n\n');
+
+      const enhancedContent = `CONTEXT FROM YOUR UPLOADED DOCUMENTS:
+
+${ragContext}
+
+CITATION REFERENCE:
+${citationInfo}
+
+---
+
+USER QUESTION: ${lastMessage.content}
+
+Please answer using the document context provided above. When referencing information, use the citation format [1], [2], etc. corresponding to the sources listed in the citation reference.`;
+
+      finalMessages = [
+        ...coreMessages.slice(0, -1),
+        {
+          ...lastMessage,
+          content: enhancedContent
+        }
+      ];
+      
+      // Use simpler system prompt without the large context
+      finalSystemPrompt = `You are an intelligent AI assistant. When provided with document context, use it to answer questions accurately and cite your sources using the numbered format [1], [2], etc. Be helpful and conversational.`;
+      
+      console.log(`🔄 Injected RAG context with citations (${enhancedContent.length} characters)`);
+    }
+  }
+
+  // Step 4: Response Generation
+  if (ragDemoSession) {
+    ragDemoManager.updateResponseGenerationStep(ragSessionId, 'processing', {
+      model: 'gemini-1.5-flash',
+      promptLength: finalSystemPrompt.length,
+      contextLength: ragContext.length
+    });
+  }
+
+  const responseStartTime = Date.now();
   const result = await streamText({
     model: geminiFlashModel,
-    system: systemPrompt,
-    messages: coreMessages,
+    system: finalSystemPrompt,
+    messages: finalMessages,
+    // Add RAG sources as metadata for citation extraction
+    experimental_providerMetadata: {
+      ragSources: ragSources.map((source, idx) => ({
+        id: `rag-${idx + 1}`,
+        filename: source.source,
+        snippet: source.content.substring(0, 200) + (source.content.length > 200 ? '...' : ''),
+        relevanceScore: source.relevance_score,
+        index: idx + 1,
+        fullContent: source.content
+      }))
+    },
     tools: {
       searchDocuments: {
         description: "Search through the user's uploaded documents for specific information",
@@ -225,11 +429,60 @@ export async function POST(request: Request) {
       },
     },
     onFinish: async ({ responseMessages }) => {
+      // Complete RAG demonstration tracking
+      if (ragDemoSession) {
+        const responseDuration = Date.now() - responseStartTime;
+        const responseContent = responseMessages.map(msg => msg.content).join('');
+        
+        ragDemoManager.updateResponseGenerationStep(ragSessionId, 'completed', {
+          model: 'gemini-1.5-flash',
+          promptLength: finalSystemPrompt.length,
+          contextLength: ragContext.length,
+          responseLength: responseContent.length,
+          tokenUsage: {
+            prompt: Math.ceil(finalSystemPrompt.length / 4), // Rough token estimate
+            completion: Math.ceil(responseContent.length / 4),
+            total: Math.ceil((finalSystemPrompt.length + responseContent.length) / 4)
+          }
+        });
+
+        // Complete the entire session
+        ragDemoManager.completeSession(ragSessionId, ragSources.map(source => ({
+          id: generateUUID(),
+          source: source.source,
+          content: source.content,
+          snippet: source.content.substring(0, 120),
+          relevanceScore: source.relevance_score,
+          metadata: {
+            chunkId: generateUUID(),
+            fileType: 'unknown'
+          }
+        })));
+      }
+
       if (session.user && session.user.id) {
         try {
+          // Add RAG sources to the response message metadata
+          const messagesWithRAG = responseMessages.map(msg => {
+            if (msg.role === 'assistant' && ragSources.length > 0) {
+              return {
+                ...msg,
+                experimental_attachments: [
+                  ...(msg.experimental_attachments || []),
+                  {
+                    name: 'rag-sources',
+                    contentType: 'application/json',
+                    url: `data:application/json;base64,${Buffer.from(JSON.stringify(ragSources)).toString('base64')}`
+                  }
+                ]
+              };
+            }
+            return msg;
+          });
+
           await saveChat({
             id,
-            messages: [...coreMessages, ...responseMessages],
+            messages: [...coreMessages, ...messagesWithRAG],
             userId: session.user.id,
           });
         } catch (error) {
