@@ -31,61 +31,63 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
     enableRealTimeUpdates: true,
   });
 
-  // WebSocket connection for real-time updates
+  // Server-Sent Events connection for real-time updates
   useEffect(() => {
     if (!isVisible || !config.enableRealTimeUpdates) return;
 
-    let ws: WebSocket | null = null;
+    let eventSource: EventSource | null = null;
     let reconnectTimeout: NodeJS.Timeout;
 
-    const connectWebSocket = () => {
+    const connectSSE = () => {
       try {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const wsUrl = `${protocol}//${window.location.host}/api/rag-demonstration/ws`;
-        
-        ws = new WebSocket(wsUrl);
+        eventSource = new EventSource('/api/rag-demonstration/events');
 
-        ws.onopen = () => {
-          console.log('🔗 RAG Demonstration WebSocket connected');
+        eventSource.onopen = () => {
+          console.log('🔗 RAG Demonstration SSE connected');
           setIsConnected(true);
         };
 
-        ws.onmessage = (event) => {
+        eventSource.onmessage = (event) => {
           try {
-            const ragEvent: RAGDemonstrationEvent = JSON.parse(event.data);
+            const data = JSON.parse(event.data);
+            
+            // Handle different message types
+            if (data.type === 'connection' || data.type === 'heartbeat') {
+              // Connection/heartbeat messages - just log
+              return;
+            }
+            
+            // Handle RAG demonstration events
+            const ragEvent: RAGDemonstrationEvent = data;
             handleRAGEvent(ragEvent);
           } catch (error) {
-            console.error('Error parsing RAG event:', error);
+            console.error('Error parsing SSE event:', error);
           }
         };
 
-        ws.onclose = () => {
-          console.log('🔌 RAG Demonstration WebSocket disconnected');
+        eventSource.onerror = (error) => {
+          console.log('🔌 RAG Demonstration SSE disconnected');
           setIsConnected(false);
+          eventSource?.close();
           
           // Attempt to reconnect after 3 seconds
-          reconnectTimeout = setTimeout(connectWebSocket, 3000);
-        };
-
-        ws.onerror = (error) => {
-          console.error('RAG Demonstration WebSocket error:', error);
-          setIsConnected(false);
+          reconnectTimeout = setTimeout(connectSSE, 3000);
         };
 
       } catch (error) {
-        console.error('Failed to create WebSocket connection:', error);
+        console.error('Failed to create SSE connection:', error);
         setIsConnected(false);
         
         // Retry connection after 5 seconds
-        reconnectTimeout = setTimeout(connectWebSocket, 5000);
+        reconnectTimeout = setTimeout(connectSSE, 5000);
       }
     };
 
-    connectWebSocket();
+    connectSSE();
 
     return () => {
-      if (ws) {
-        ws.close();
+      if (eventSource) {
+        eventSource.close();
       }
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
