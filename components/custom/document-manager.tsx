@@ -8,7 +8,7 @@ import { FileIcon, TrashIcon, UploadIcon, LoaderIcon } from "@/components/custom
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorPanel, ErrorDetails } from "./error-panel";
-import { SystemStatus } from "./system-status";
+import { RAGDemonstration } from "./rag-demonstration";
 
 interface Document {
   id: string;
@@ -37,7 +37,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [currentError, setCurrentError] = useState<ErrorDetails | null>(null);
-  const [showSystemStatus, setShowSystemStatus] = useState(false);
+  const [showRAGDemo, setShowRAGDemo] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user's documents
@@ -140,14 +140,23 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
   };
 
   const handleDeleteDocument = async (documentId: string, filename: string) => {
+    if (!documentId) {
+      toast.error("Invalid document ID");
+      return;
+    }
+
     try {
+      console.log(`🗑️ Attempting to delete document: ${documentId} (${filename})`);
+      
       const response = await fetch(`/api/documents/${documentId}`, {
         method: "DELETE",
       });
 
+      const responseData = await response.json();
+      console.log("Delete response:", responseData);
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Delete failed");
+        throw new Error(responseData.error || `Delete failed with status ${response.status}`);
       }
 
       toast.success(`${filename} deleted successfully`);
@@ -212,10 +221,10 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
             <Button 
               variant="outline" 
               size="sm" 
-              onClick={() => setShowSystemStatus(true)}
-              title="Check system status"
+              onClick={() => setShowRAGDemo(true)}
+              title="View RAG Pipeline Demonstration"
             >
-              🔧 Status
+              🔍 RAG Demo
             </Button>
             <Button variant="ghost" size="sm" onClick={onClose}>
               ✕
@@ -351,10 +360,10 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
         </div>
       </div>
 
-      {/* System Status Panel */}
-      <SystemStatus 
-        isVisible={showSystemStatus} 
-        onClose={() => setShowSystemStatus(false)} 
+      {/* RAG Demonstration Panel */}
+      <RAGDemonstration 
+        isVisible={showRAGDemo} 
+        onClose={() => setShowRAGDemo(false)} 
       />
     </div>
   );
