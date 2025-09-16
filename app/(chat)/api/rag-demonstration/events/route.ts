@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     return new Response('Unauthorized', { status: 401 });
   }
 
+  const userId = session.user.id;
+
   // Set up Server-Sent Events
   const encoder = new TextEncoder();
   
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
       controller.enqueue(encoder.encode(data));
 
       // Subscribe to RAG events for this user
-      const unsubscribe = ragDemoManager.subscribe(session.user.id, (event) => {
+      const unsubscribe = ragDemoManager.subscribe(userId, (event) => {
         try {
           const data = `data: ${JSON.stringify(event)}\n\n`;
           controller.enqueue(encoder.encode(data));

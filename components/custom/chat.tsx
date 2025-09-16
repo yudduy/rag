@@ -52,6 +52,7 @@ export function Chat({
               content={message.content}
               attachments={message.experimental_attachments}
               toolInvocations={message.toolInvocations}
+              ragSources={(message as any).ragSources}
             />
           ))}
 

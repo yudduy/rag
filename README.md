@@ -1,19 +1,17 @@
-# 🚀 Zero-Cost RAG Chatbot
+# RAG Chatbot
 
-A production-ready Retrieval-Augmented Generation (RAG) chatbot built with **Next.js**, **Pinecone**, and **HuggingFace**. This system provides intelligent document-based conversations with **zero monthly costs** using free tier services.
+A Retrieval-Augmented Generation (RAG) chatbot built with **Next.js**, **Pinecone**, and **HuggingFace**. This system provides intelligent document-based conversations with **zero monthly costs** using free tier services.
 
-## ✨ Features
+## Features
 
 - **📄 Document Intelligence** - Upload and chat with PDF, DOCX, MD, and TXT files
-- **💰 Zero Cost Operation** - Pinecone Serverless + HuggingFace free tiers
 - **🔒 Multi-User Support** - Secure namespace-based user isolation
 - **⚡ Real-time Chat** - Streaming responses with document context
 - **🎯 Smart Search** - Semantic document retrieval with relevance scoring
 - **🛡️ Production Ready** - Authentication, error handling, and monitoring
-- **📱 Modern UI** - Responsive design with drag-and-drop file uploads
 - **🔧 Developer Friendly** - TypeScript, comprehensive error handling
 
-## 🏗️ Architecture
+## Architecture
 
 ```mermaid
 graph TD

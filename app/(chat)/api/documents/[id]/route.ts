@@ -31,7 +31,8 @@ export async function DELETE(
     // Delete from RAG system
     try {
       const ragCore = getPineconeRAGCore();
-      await ragCore.deleteDocument(document.filename, session.user.id);
+      const ragDeleted = await ragCore.deleteDocument(document.filename, session.user.id);
+      console.log(`RAG deletion result for ${document.filename}:`, ragDeleted);
     } catch (ragError) {
       console.error("RAG deletion error:", ragError);
       // Continue with database deletion even if RAG deletion fails

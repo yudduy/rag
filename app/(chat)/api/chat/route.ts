@@ -98,26 +98,27 @@ export async function POST(request: Request) {
   
   if (session.user?.id && latestUserMessage) {
     try {
+      const ragCore = getPineconeRAGCore();
+      const modelInfo = ragCore.getEmbeddingModelInfo();
+      
       // Step 1: Query Embedding
       ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'processing', {
         originalQuery: latestUserMessage,
         processedQuery: latestUserMessage,
-        embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2',
-        embeddingDimensions: 384
+        embeddingModel: modelInfo.modelName,
+        embeddingDimensions: modelInfo.dimensions
       });
-
-      const ragCore = getPineconeRAGCore();
       
       // Generate embedding (this is already done internally, but we track it)
       const embeddingStartTime = Date.now();
-      const queryEmbedding = await ragCore.embeddings.embedText(latestUserMessage);
+      const queryEmbedding = await ragCore.generateEmbedding(latestUserMessage);
       const embeddingDuration = Date.now() - embeddingStartTime;
       
       ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'completed', {
         originalQuery: latestUserMessage,
         processedQuery: latestUserMessage,
-        embeddingModel: 'sentence-transformers/all-MiniLM-L6-v2',
-        embeddingDimensions: 384,
+        embeddingModel: modelInfo.modelName,
+        embeddingDimensions: modelInfo.dimensions,
         embeddingVector: queryEmbedding.slice(0, 8), // First 8 dimensions for preview
         embeddingPreview: queryEmbedding.slice(0, 8).map(v => v.toFixed(4)).join(', ')
       });
@@ -355,8 +356,8 @@ Please answer using the document context provided above. When referencing inform
         relevanceScore: source.relevance_score,
         index: idx + 1,
         fullContent: source.content
-      }))
-    },
+      })) as any
+    } as any,
     tools: {
       searchDocuments: {
         description: "Search through the user's uploaded documents for specific information",
@@ -468,14 +469,14 @@ Please answer using the document context provided above. When referencing inform
               return {
                 ...msg,
                 experimental_attachments: [
-                  ...(msg.experimental_attachments || []),
+                  ...((msg as any).experimental_attachments || []),
                   {
                     name: 'rag-sources',
                     contentType: 'application/json',
                     url: `data:application/json;base64,${Buffer.from(JSON.stringify(ragSources)).toString('base64')}`
                   }
                 ]
-              };
+              } as any;
             }
             return msg;
           });
