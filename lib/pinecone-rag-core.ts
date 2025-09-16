@@ -38,7 +38,7 @@ const RAG_CONFIG = {
   chunk_size: parseInt(process.env.RAG_CHUNK_SIZE || "1000"),
   chunk_overlap: parseInt(process.env.RAG_CHUNK_OVERLAP || "200"),
   max_retrieval_docs: parseInt(process.env.RAG_MAX_DOCS || "5"),
-  similarity_threshold: parseFloat(process.env.RAG_SIMILARITY_THRESHOLD || "0.7"),
+  similarity_threshold: parseFloat(process.env.RAG_SIMILARITY_THRESHOLD || "0.1"), // Lowered for HuggingFace embeddings
   query_expansion_enabled: process.env.RAG_QUERY_EXPANSION === "true",
   reranking_enabled: process.env.RAG_RERANKING === "true",
 };
@@ -318,7 +318,6 @@ export class PineconeRAGCore {
           page: match.metadata?.page || null,
           chunkId: match.id || '',
         })) || [];
-
       return results.sort((a: any, b: any) => b.relevance_score - a.relevance_score);
 
     } catch (error) {
@@ -444,6 +443,24 @@ export class PineconeRAGCore {
       console.error("Error deleting document:", error);
       return false;
     }
+  }
+
+  /**
+   * Generate embedding for a text query (public method for demonstration)
+   */
+  async generateEmbedding(text: string): Promise<number[]> {
+    await this.ensureInitialized();
+    return await this.embeddings.embedText(text);
+  }
+
+  /**
+   * Get embedding model info for demonstration
+   */
+  getEmbeddingModelInfo() {
+    return {
+      modelName: this.embeddings.getModelName(),
+      dimensions: this.embeddings.getDimensions()
+    };
   }
 
   /**

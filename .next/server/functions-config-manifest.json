@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/login":{},"/chat/[id]":{},"/register":{},"/":{}}}
+{"version":1,"functions":{"/":{},"/register":{},"/chat/[id]":{},"/login":{}}}

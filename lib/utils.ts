@@ -149,7 +149,23 @@ export function convertToUIMessages(
       role: message.role,
       content: textContent,
       toolInvocations,
-    });
+      // Preserve RAG sources if they exist in experimental_attachments
+      ragSources: (message as any).experimental_attachments?.find((att: any) => att.name === 'rag-sources')
+        ? (() => {
+            try {
+              const ragAttachment = (message as any).experimental_attachments.find((att: any) => att.name === 'rag-sources');
+              if (ragAttachment?.url.startsWith('data:application/json;base64,')) {
+                const base64Data = ragAttachment.url.split(',')[1];
+                const jsonData = Buffer.from(base64Data, 'base64').toString('utf-8');
+                return JSON.parse(jsonData);
+              }
+            } catch (error) {
+              console.error('Error parsing RAG sources in convertToUIMessages:', error);
+            }
+            return undefined;
+          })()
+        : undefined,
+    } as any);
 
     return chatMessages;
   }, []);

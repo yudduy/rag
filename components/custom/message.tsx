@@ -9,6 +9,7 @@ import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
 import { Weather } from "./weather";
 import { CitationList, Citation } from "./citation-badge";
+import { RAGCitations, RAGSource } from "./rag-citations";
 
 // Extract citations from tool invocations
 function extractCitations(toolInvocations: Array<ToolInvocation> | undefined): Citation[] {
@@ -24,8 +25,52 @@ function extractCitations(toolInvocations: Array<ToolInvocation> | undefined): C
       }
     }
   });
+
+  return citations;
+}
+
+// Extract RAG citations from message content (for direct RAG injection)
+function extractRAGCitations(content: string, chatId: string): Citation[] {
+  const citations: Citation[] = [];
+  
+  // Look for citation patterns like [1], [2], etc. in the content
+  const citationMatches = content.match(/\[(\d+)\]/g);
+  if (!citationMatches) return [];
+  
+  // For now, create placeholder citations - in a full implementation,
+  // we'd need to pass the RAG sources to the message component
+  const uniqueNumbers = [...new Set(citationMatches.map(match => parseInt(match.replace(/[\[\]]/g, ''))))];
+  
+  uniqueNumbers.forEach(num => {
+    citations.push({
+      id: `rag-${chatId}-${num}`,
+      filename: `Source ${num}`,
+      snippet: `Citation ${num} from RAG context`,
+      page: null,
+      index: num
+    });
+  });
   
   return citations;
+}
+
+// Extract RAG sources from attachments
+function extractRAGSources(attachments?: Array<Attachment>): RAGSource[] {
+  if (!attachments) return [];
+  
+  const ragAttachment = attachments.find(att => att.name === 'rag-sources');
+  if (!ragAttachment || !ragAttachment.url.startsWith('data:application/json;base64,')) {
+    return [];
+  }
+  
+  try {
+    const base64Data = ragAttachment.url.split(',')[1];
+    const jsonData = Buffer.from(base64Data, 'base64').toString('utf-8');
+    return JSON.parse(jsonData);
+  } catch (error) {
+    console.error('Error parsing RAG sources:', error);
+    return [];
+  }
 }
 
 export const Message = ({
@@ -34,12 +79,14 @@ export const Message = ({
   content,
   toolInvocations,
   attachments,
+  ragSources,
 }: {
   chatId: string;
   role: string;
   content: string | ReactNode;
   toolInvocations: Array<ToolInvocation> | undefined;
   attachments?: Array<Attachment>;
+  ragSources?: RAGSource[];
 }) => {
   return (
     <motion.div
@@ -57,9 +104,18 @@ export const Message = ({
             <Markdown>{content}</Markdown>
             {/* Show citations for assistant messages */}
             {role === "assistant" && (
-              <div className="mt-2">
-                <CitationList citations={extractCitations(toolInvocations)} />
-              </div>
+              <>
+                {/* Traditional tool citations */}
+                <div className="mt-2">
+                  <CitationList citations={extractCitations(toolInvocations)} />
+                </div>
+                
+                {/* RAG citations with full source information */}
+                <RAGCitations 
+                  content={content} 
+                  ragSources={ragSources || extractRAGSources(attachments)} 
+                />
+              </>
             )}
           </div>
         )}
