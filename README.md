@@ -4,12 +4,12 @@ A Retrieval-Augmented Generation (RAG) chatbot built with **Next.js**, **Pinecon
 
 ## Features
 
-- **📄 Document Intelligence** - Upload and chat with PDF, DOCX, MD, and TXT files
-- **🔒 Multi-User Support** - Secure namespace-based user isolation
-- **⚡ Real-time Chat** - Streaming responses with document context
-- **🎯 Smart Search** - Semantic document retrieval with relevance scoring
-- **🛡️ Production Ready** - Authentication, error handling, and monitoring
-- **🔧 Developer Friendly** - TypeScript, comprehensive error handling
+- **Document Intelligence** - Upload and chat with PDF, DOCX, MD, and TXT files
+- **Multi-User Support** - Secure namespace-based user isolation
+- **Real-time Chat** - Streaming responses with document context
+- **Smart Search** - Semantic document retrieval with relevance scoring
+- **Production Ready** - Authentication, error handling, and monitoring
+- **Developer Friendly** - TypeScript, comprehensive error handling
 
 ## Architecture
 
@@ -26,7 +26,7 @@ graph TD
     I --> J[Streaming Response]
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -193,7 +193,7 @@ npm start
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 📖 How to Use
+## How to Use
 
 ### 1. User Registration/Login
 
@@ -204,7 +204,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### 2. Upload Documents
 
-1. **Click the Document Manager** (📁 icon in the navbar)
+1. **Click the Document Manager** (folder icon in the navbar)
 2. **Upload Files**:
    - Drag & drop files or click "Choose Files"
    - Supported: PDF, DOCX, MD, TXT (max 10MB each)
@@ -247,7 +247,7 @@ AI: *analyzes both documents* Comparing the two documents:
 Document A suggests... while Document B indicates...
 ```
 
-## ⚙️ Configuration Guide
+## Configuration Guide
 
 ### Free Tier Limits
 
@@ -293,7 +293,7 @@ RAG_SIMILARITY_THRESHOLD=0.75
 HUGGINGFACE_API_KEY=your-token  # For reliability
 ```
 
-## 🛠️ Development
+## Development
 
 ### Project Structure
 
@@ -366,7 +366,7 @@ npm run db:push      # Push schema changes
 npm run rag:test     # Test embeddings + Pinecone
 ```
 
-## 🚀 Production Deployment
+## Production Deployment
 
 ### Vercel Deployment (Recommended)
 
@@ -400,15 +400,15 @@ CMD ["npm", "start"]
 ### Environment Variables Checklist
 
 Production deployment requires:
-- ✅ `POSTGRES_URL` - Automatically injected by Neon via Vercel marketplace
-- ✅ `AUTH_SECRET` - Session encryption (add manually)
-- ✅ `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API (add manually)
-- ✅ `PINECONE_API_KEY` - Vector database (add manually)
-- ✅ `PINECONE_INDEX_NAME` - Index name (add manually)
-- ⚠️ `HUGGINGFACE_API_KEY` - Optional but recommended (add manually)
-- ⚠️ `NODE_ENV=production` - Production mode (automatically set)
+- **Required** `POSTGRES_URL` - Automatically injected by Neon via Vercel marketplace
+- **Required** `AUTH_SECRET` - Session encryption (add manually)
+- **Required** `GOOGLE_GENERATIVE_AI_API_KEY` - Gemini API (add manually)
+- **Required** `PINECONE_API_KEY` - Vector database (add manually)
+- **Required** `PINECONE_INDEX_NAME` - Index name (add manually)
+- **Optional** `HUGGINGFACE_API_KEY` - Optional but recommended (add manually)
+- **Optional** `NODE_ENV=production` - Production mode (automatically set)
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### Common Issues
 
@@ -489,7 +489,7 @@ tail -f .next/server.log
 - **Gemini**: Monitor API usage in Google Cloud Console
 - **Neon**: Monitor compute hours and storage in Vercel Storage dashboard
 
-## 📊 Usage Analytics
+## Usage Analytics
 
 ### Free Tier Capacity
 
@@ -506,7 +506,7 @@ When you exceed free tiers:
 2. **HuggingFace**: $9/month for Inference Endpoints
 3. **Neon**: $19/month for Launch plan with 10GB storage and more compute hours
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch: `git checkout -b feature-name`
@@ -536,11 +536,11 @@ npm run rag:test
 npm run dev
 ```
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 Built with:
 - [Next.js](https://nextjs.org/) - React framework
@@ -552,4 +552,4 @@ Built with:
 
 ---
 
-**🎉 Happy building!** If you have questions or need help, please open an issue or start a discussion.
+**Happy building!** If you have questions or need help, please open an issue or start a discussion.
