@@ -43,7 +43,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         eventSource = new EventSource('/api/rag-demonstration/events');
 
         eventSource.onopen = () => {
-          console.log('🔗 RAG Demonstration SSE connected');
+          console.log('RAG Demonstration SSE connected');
           setIsConnected(true);
         };
 
@@ -66,7 +66,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         };
 
         eventSource.onerror = (error) => {
-          console.log('🔌 RAG Demonstration SSE disconnected');
+          console.log('RAG Demonstration SSE disconnected');
           setIsConnected(false);
           eventSource?.close();
           
@@ -191,7 +191,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         <div className="flex-1 overflow-auto">
           {!currentSession ? (
             <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-              <div className="text-6xl mb-4">🔍</div>
+              <div className="text-lg font-medium mb-4">Search</div>
               <h3 className="text-lg font-medium mb-2">RAG Pipeline Ready</h3>
               <p className="text-muted-foreground mb-4 max-w-md">
                 Start a conversation in the chat to see the real-time RAG pipeline in action. 
@@ -199,19 +199,19 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
               </p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div className="p-3 border rounded-lg">
-                  <div className="font-medium">🧠 Query Embedding</div>
+                  <div className="font-medium">Query Embedding</div>
                   <div className="text-muted-foreground">Vector generation</div>
                 </div>
                 <div className="p-3 border rounded-lg">
-                  <div className="font-medium">📚 Document Retrieval</div>
+                  <div className="font-medium">Document Retrieval</div>
                   <div className="text-muted-foreground">Similarity search</div>
                 </div>
                 <div className="p-3 border rounded-lg">
-                  <div className="font-medium">🔗 Context Assembly</div>
+                  <div className="font-medium">Context Assembly</div>
                   <div className="text-muted-foreground">Information fusion</div>
                 </div>
                 <div className="p-3 border rounded-lg">
-                  <div className="font-medium">✨ Response Generation</div>
+                  <div className="font-medium">Response Generation</div>
                   <div className="text-muted-foreground">AI completion</div>
                 </div>
               </div>

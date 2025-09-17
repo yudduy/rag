@@ -146,7 +146,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
     }
 
     try {
-      console.log(`🗑️ Attempting to delete document: ${documentId} (${filename})`);
+      console.log(`Attempting to delete document: ${documentId} (${filename})`);
       
       const response = await fetch(`/api/documents/${documentId}`, {
         method: "DELETE",
@@ -224,10 +224,10 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
               onClick={() => setShowRAGDemo(true)}
               title="View RAG Pipeline Demonstration"
             >
-              🔍 RAG Demo
+              RAG Demonstration
             </Button>
             <Button variant="ghost" size="sm" onClick={onClose}>
-              ✕
+              Close
             </Button>
           </div>
         </div>
