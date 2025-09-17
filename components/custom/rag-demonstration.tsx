@@ -31,6 +31,53 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
     enableRealTimeUpdates: true,
   });
 
+  // Handle RAG events
+  const handleRAGEvent = useCallback((event: RAGDemonstrationEvent) => {
+    switch (event.type) {
+      case 'session_start':
+        setCurrentSession(event.data);
+        break;
+      
+      case 'step_start':
+      case 'step_update':
+      case 'step_complete':
+      case 'step_error':
+        setCurrentSession(prev => {
+          if (!prev || prev.sessionId !== event.sessionId) return prev;
+          
+          const stepKey = event.stepId as keyof typeof prev.steps;
+          if (!prev.steps[stepKey]) return prev;
+          
+          return {
+            ...prev,
+            steps: {
+              ...prev.steps,
+              [stepKey]: {
+                ...prev.steps[stepKey],
+                ...event.data,
+                status: event.type === 'step_start' ? 'processing' :
+                       event.type === 'step_complete' ? 'completed' :
+                       event.type === 'step_error' ? 'error' :
+                       prev.steps[stepKey].status
+              }
+            }
+          };
+        });
+        break;
+        
+      case 'session_complete':
+        setCurrentSession(prev => prev ? { ...prev, status: 'completed' } : null);
+        break;
+        
+      case 'session_error':
+        setCurrentSession(prev => prev ? { ...prev, status: 'error' } : null);
+        break;
+        
+      default:
+        console.log('Unknown RAG event type:', event.type);
+    }
+  }, []);
+
   // Server-Sent Events connection for real-time updates
   useEffect(() => {
     if (!isVisible || !config.enableRealTimeUpdates) return;
@@ -93,57 +140,9 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         clearTimeout(reconnectTimeout);
       }
     };
-  }, [isVisible, config.enableRealTimeUpdates]);
+  }, [isVisible, config.enableRealTimeUpdates, handleRAGEvent]);
 
-  const handleRAGEvent = useCallback((event: RAGDemonstrationEvent) => {
-    switch (event.type) {
-      case 'session_start':
-        setCurrentSession(event.data);
-        break;
-      
-      case 'step_start':
-      case 'step_progress':
-      case 'step_complete':
-        setCurrentSession(prev => {
-          if (!prev || prev.sessionId !== event.sessionId) return prev;
-          
-          const updatedSession = { ...prev };
-          const stepKey = event.stepId as keyof typeof updatedSession.steps;
-          
-          if (updatedSession.steps[stepKey]) {
-            updatedSession.steps[stepKey] = {
-              ...updatedSession.steps[stepKey],
-              ...event.data,
-            };
-          }
-          
-          return updatedSession;
-        });
-        break;
-      
-      case 'session_complete':
-        setCurrentSession(prev => {
-          if (!prev || prev.sessionId !== event.sessionId) return prev;
-          return {
-            ...prev,
-            status: 'completed',
-            totalDuration: event.data.totalDuration,
-            citations: event.data.citations,
-          };
-        });
-        break;
-      
-      case 'error':
-        setCurrentSession(prev => {
-          if (!prev || prev.sessionId !== event.sessionId) return prev;
-          return {
-            ...prev,
-            status: 'error',
-          };
-        });
-        break;
-    }
-  }, []);
+  // Duplicate handleRAGEvent removed
 
   const clearSession = () => {
     setCurrentSession(null);
@@ -227,7 +226,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
                   </div>
                 </div>
                 <p className="text-sm bg-background rounded p-2 font-mono">
-                  "{currentSession.query}"
+                  &quot;{currentSession.query}&quot;
                 </p>
               </div>
 

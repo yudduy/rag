@@ -1,14 +1,1 @@
-{
-  "node": {
-    "44b708f89b2b058d3d1a9451f92ae25ec1a21e8f": {
-      "workers": {
-        "app/(chat)/page": "[project]/.next-internal/server/app/(chat)/page/actions.js { ACTIONS_MODULE0 => \"[project]/components/custom/navbar.tsx [app-rsc] (ecmascript)\" } [app-rsc] (ecmascript)"
-      },
-      "layer": {
-        "app/(chat)/page": "rsc"
-      }
-    }
-  },
-  "edge": {},
-  "encryptionKey": "oFK6AC0AG6R+vrnUWYq2tMIq1pyw2nN0iUSEaSOoY58="
-}
+{"node":{"079af391027f515e6b475721fe8bdb2e8ebc1912":{"workers":{"app/_not-found/page":"42035","app/(auth)/register/page":"42035","app/(auth)/login/page":"42035","app/(chat)/chat/[id]/page":"42035","app/(chat)/page":"42035","app/(chat)/demonstration/page":"42035"},"layer":{"app/_not-found/page":"rsc","app/(auth)/register/page":"rsc","app/(auth)/login/page":"rsc","app/(chat)/chat/[id]/page":"rsc","app/(chat)/page":"rsc","app/(chat)/demonstration/page":"rsc"}},"af0ed5d6a42a8cb127adf89b01a60f17535f05bb":{"workers":{"app/(auth)/register/page":"33046","app/(auth)/login/page":"19120"},"layer":{"app/(auth)/register/page":"action-browser","app/(auth)/login/page":"action-browser"}},"e55076a0838d2fdeb16914021c9f1a95d37ee6d8":{"workers":{"app/(auth)/register/page":"33046"},"layer":{"app/(auth)/register/page":"action-browser"}},"f75ac3cb2feb73926a47277e1249c6044f85687c":{"workers":{"app/(auth)/register/page":"33046","app/(auth)/login/page":"19120"},"layer":{"app/(auth)/register/page":"action-browser","app/(auth)/login/page":"action-browser"}},"b587edaa61e984276ca60f8d9ca9de4ea6cccbc9":{"workers":{"app/(auth)/login/page":"19120"},"layer":{"app/(auth)/login/page":"action-browser"}}},"edge":{},"encryptionKey":"dr7weiqSdFHaHEMxRtsQjZNLht+UKmU+YRDxAw4cCGo="}

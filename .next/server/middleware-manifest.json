@@ -3,18 +3,14 @@
   "middleware": {
     "/": {
       "files": [
-        "server/edge/chunks/ssr/_7348bb._.js",
-        "server/edge/chunks/ssr/node_modules_@auth_core_ee1921._.js",
-        "server/edge/chunks/ssr/node_modules_jose_dist_browser_9bb511._.js",
-        "server/edge/chunks/ssr/node_modules_49c746._.js",
-        "server/edge/chunks/ssr/[root of the server]__595bc2._.js",
-        "server/edge/chunks/ssr/edge-wrapper_1cc3e8.js"
+        "server/edge-runtime-webpack.js",
+        "server/middleware.js"
       ],
       "name": "middleware",
       "page": "/",
       "matchers": [
         {
-          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\\\.json))?[\\/#\\?]?$",
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?(?:\\/(\\/?index|\\/?index\\.json))?[\\/#\\?]?$",
           "originalSource": "/"
         },
         {
@@ -35,67 +31,18 @@
         }
       ],
       "wasm": [],
-      "assets": [
-        {
-          "name": "server/edge/chunks/ssr/_7348bb._.js.map",
-          "filePath": "server/edge/chunks/ssr/_7348bb._.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/_7348bb._.js",
-          "filePath": "server/edge/chunks/ssr/_7348bb._.js"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_@auth_core_ee1921._.js.map",
-          "filePath": "server/edge/chunks/ssr/node_modules_@auth_core_ee1921._.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_@auth_core_ee1921._.js",
-          "filePath": "server/edge/chunks/ssr/node_modules_@auth_core_ee1921._.js"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_jose_dist_browser_9bb511._.js.map",
-          "filePath": "server/edge/chunks/ssr/node_modules_jose_dist_browser_9bb511._.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_jose_dist_browser_9bb511._.js",
-          "filePath": "server/edge/chunks/ssr/node_modules_jose_dist_browser_9bb511._.js"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_49c746._.js.map",
-          "filePath": "server/edge/chunks/ssr/node_modules_49c746._.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/node_modules_49c746._.js",
-          "filePath": "server/edge/chunks/ssr/node_modules_49c746._.js"
-        },
-        {
-          "name": "server/edge/chunks/ssr/[root of the server]__595bc2._.js.map",
-          "filePath": "server/edge/chunks/ssr/[root of the server]__595bc2._.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/[root of the server]__595bc2._.js",
-          "filePath": "server/edge/chunks/ssr/[root of the server]__595bc2._.js"
-        },
-        {
-          "name": "server/edge/chunks/ssr/edge-wrapper_1cc3e8.js.map",
-          "filePath": "server/edge/chunks/ssr/edge-wrapper_1cc3e8.js.map"
-        },
-        {
-          "name": "server/edge/chunks/ssr/edge-wrapper_1cc3e8.js",
-          "filePath": "server/edge/chunks/ssr/edge-wrapper_1cc3e8.js"
-        }
-      ],
+      "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "development",
-        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "oFK6AC0AG6R+vrnUWYq2tMIq1pyw2nN0iUSEaSOoY58=",
-        "__NEXT_PREVIEW_MODE_ID": "0607677c296fb9943ab4f50ce4531b48",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "1aba1047656b5a92f6bb2c016bb99548fb879adc3dc070f930af0f8bf42ed470",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "7705de234d0c6da094acf222ce36b565ee5b1cb9562d34e64b13bdc5306e22ba"
+        "__NEXT_BUILD_ID": "KbjEq64ScGsqFfhQUQUGr",
+        "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "dr7weiqSdFHaHEMxRtsQjZNLht+UKmU+YRDxAw4cCGo=",
+        "__NEXT_PREVIEW_MODE_ID": "c772aa50ace6916411c25b5843499515",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "98dae9aa2d5ecd0a68b62835996192780b1c405580f7a1a0803c5ffdfc32493f",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "84c4a360a8ad81fe87ca6e3954479d2307314f197bd44572e04fa01b48971aba"
       }
     }
   },
+  "functions": {},
   "sortedMiddleware": [
     "/"
-  ],
-  "functions": {}
+  ]
 }
