@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// Removed framer-motion for minimalistic UI
 import { Button } from "@/components/ui/button";
 import { 
   RAGDemonstrationSession, 
@@ -153,10 +153,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
+      <div
         className="bg-background rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
@@ -288,7 +285,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
             <RAGMetricsPanel session={currentSession} />
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }
