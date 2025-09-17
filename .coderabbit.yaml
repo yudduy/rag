@@ -1,0 +1,24 @@
+ignore:
+  - "**/node_modules/**"
+  - "**/drizzle/**"
+  - "**/scripts/**"
+  - "**/*.pdf"
+  - "**/*.docx"
+  - "**/test-*.txt"
+  - "**/test-*.xyz"
+  - "**/test/**"
+  - "**/public/fonts/**"
+  - "**/public/images/**"
+
+max_file_size: 1000000
+max_files: 1000
+
+include:
+  - "**/*.ts"
+  - "**/*.tsx"
+  - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.json"
+  - "**/*.md"
+  - "**/*.yml"
+  - "**/*.yaml"
