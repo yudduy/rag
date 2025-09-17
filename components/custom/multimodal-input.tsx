@@ -14,6 +14,7 @@ import React, {
 import { toast } from "sonner";
 
 import { ArrowUpIcon, PaperclipIcon, StopIcon } from "./icons";
+import Link from "next/link";
 import { PreviewAttachment } from "./preview-attachment";
 import useWindowSize from "./use-window-size";
 import { Button } from "../ui/button";
@@ -345,16 +346,28 @@ export function MultimodalInput({
       )}
 
       <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+        className="rounded-full p-1.5 h-fit absolute bottom-2 right-20 m-0.5 dark:border-zinc-700"
         onClick={(event) => {
           event.preventDefault();
           fileInputRef.current?.click();
         }}
         variant="outline"
         disabled={isLoading}
+        title="Upload files"
       >
         <PaperclipIcon size={14} />
       </Button>
+
+      <Link href="/demonstration">
+        <Button
+          className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+          variant="outline"
+          disabled={isLoading}
+          title="See how RAG works"
+        >
+          <span className="text-xs font-medium">i</span>
+        </Button>
+      </Link>
     </div>
   );
 }
