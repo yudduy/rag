@@ -45,7 +45,7 @@ export function QueryEmbeddingStepComponent({ step, config }: QueryEmbeddingStep
             <div>
               <h4 className="text-sm font-medium mb-2">Original Query</h4>
               <div className="bg-muted/30 rounded p-2 text-sm font-mono">
-                "{step.data.originalQuery}"
+                &quot;{step.data.originalQuery}&quot;
               </div>
             </div>
             
@@ -53,7 +53,7 @@ export function QueryEmbeddingStepComponent({ step, config }: QueryEmbeddingStep
               <div>
                 <h4 className="text-sm font-medium mb-2">Processed Query</h4>
                 <div className="bg-muted/30 rounded p-2 text-sm font-mono">
-                  "{step.data.processedQuery}"
+                  &quot;{step.data.processedQuery}&quot;
                 </div>
               </div>
             )}

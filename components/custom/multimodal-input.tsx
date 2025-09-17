@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useState,
   useCallback,
+  useMemo,
   Dispatch,
   SetStateAction,
   ChangeEvent,
@@ -101,7 +102,7 @@ export function MultimodalInput({
     }
   }, [attachments, handleSubmit, setAttachments, width]);
 
-  const ALLOWED_FILE_TYPES = [
+  const ALLOWED_FILE_TYPES = useMemo(() => [
     'image/png',
     'image/jpeg',
     'image/gif',
@@ -110,7 +111,7 @@ export function MultimodalInput({
     'text/markdown',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-  ];
+  ], []);
   
   const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
@@ -118,7 +119,7 @@ export function MultimodalInput({
     return filename.split('.').pop()?.toLowerCase() || '';
   };
 
-  const isValidFileType = (file: File): boolean => {
+  const isValidFileType = useCallback((file: File): boolean => {
     // Check MIME type first
     if (file.type && ALLOWED_FILE_TYPES.includes(file.type)) {
       return true;
@@ -144,9 +145,9 @@ export function MultimodalInput({
     }
     
     return false;
-  };
+  }, [ALLOWED_FILE_TYPES]);
 
-  const uploadFile = async (file: File) => {
+  const uploadFile = useCallback(async (file: File) => {
     // Client-side validation
     if (!isValidFileType(file)) {
       toast.error("Invalid file type. Please upload images (PNG, JPEG, GIF), PDFs, text files, or Office documents.");
@@ -211,7 +212,7 @@ export function MultimodalInput({
     } catch (error) {
       toast.error("Failed to upload file, please try again!");
     }
-  };
+  }, [updateIndexingStatus, MAX_SIZE_BYTES, isValidFileType]);
 
   const handleFileChange = useCallback(
     async (event: ChangeEvent<HTMLInputElement>) => {
@@ -236,7 +237,7 @@ export function MultimodalInput({
         setUploadQueue([]);
       }
     },
-    [setAttachments],
+    [setAttachments, uploadFile],
   );
 
   return (
