@@ -1,5 +1,5 @@
 {
-  "name": "rag-enhanced-chatbot",
+  "name": "rag",
   "version": "1.0.0",
   "description": "An intelligent AI chatbot with advanced RAG capabilities built with Next.js",
   "private": true,
