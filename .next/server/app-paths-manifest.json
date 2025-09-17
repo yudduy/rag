@@ -3,5 +3,7 @@
   "/(chat)/page": "app/(chat)/page.js",
   "/(chat)/api/chat/route": "app/(chat)/api/chat/route.js",
   "/(chat)/demonstration/page": "app/(chat)/demonstration/page.js",
-  "/favicon.ico/route": "app/favicon.ico/route.js"
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(chat)/api/rag-demonstration/events/route": "app/(chat)/api/rag-demonstration/events/route.js",
+  "/(chat)/api/documents/upload/route": "app/(chat)/api/documents/upload/route.js"
 }

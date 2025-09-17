@@ -325,7 +325,7 @@ export function MultimodalInput({
 
       {isLoading ? (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+          className="rounded-full p-1.5 h-fit absolute bottom-10 right-2 m-0.5 text-white"
           onClick={(event) => {
             event.preventDefault();
             stop();
@@ -335,7 +335,7 @@ export function MultimodalInput({
         </Button>
       ) : (
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-2 m-0.5 text-white"
+          className="rounded-full p-1.5 h-fit absolute bottom-10 right-2 m-0.5 text-white"
           onClick={(event) => {
             event.preventDefault();
             submitForm();
@@ -347,7 +347,7 @@ export function MultimodalInput({
       )}
 
       <Button
-        className="rounded-full p-1.5 h-fit absolute bottom-2 right-10 m-0.5 dark:border-zinc-700"
+        className="rounded-full p-1.5 h-fit absolute bottom-10 right-10 m-0.5 dark:border-zinc-700"
         onClick={(event) => {
           event.preventDefault();
           fileInputRef.current?.click();
@@ -360,7 +360,7 @@ export function MultimodalInput({
 
       <Link href="/demonstration">
         <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-2 right-20 m-0.5 dark:border-zinc-700"
+          className="rounded-full p-1.5 h-fit absolute bottom-10 right-16 m-0.5 dark:border-zinc-700"
           variant="outline"
           disabled={isLoading}
           title="See how RAG works"
