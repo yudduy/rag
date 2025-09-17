@@ -35,4 +35,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Workaround for pdf-parse build issue
-/test/
+/test/.next/
