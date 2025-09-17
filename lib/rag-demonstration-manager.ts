@@ -236,7 +236,7 @@ class RAGDemonstrationManager {
     session.status = 'error';
 
     this.emitEvent({
-      type: 'error',
+      type: 'session_error',
       sessionId,
       data: { error },
       timestamp: Date.now()
