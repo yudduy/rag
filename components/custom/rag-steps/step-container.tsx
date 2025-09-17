@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+// Removed framer-motion for minimalistic UI
 import { ReactNode } from "react";
 
 interface StepContainerProps {
@@ -41,9 +41,7 @@ export function StepContainer({
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className={`border rounded-lg p-4 ${getBorderColor()} ${getBackgroundColor()}`}
     >
       {/* Step Header */}
@@ -54,18 +52,14 @@ export function StepContainer({
           
           {/* Processing Indicator */}
           {isProcessing && (
-            <motion.div
-              className="w-2 h-2 bg-blue-500 rounded-full"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1, repeat: Infinity }}
-            />
+            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
           )}
         </div>
         
         {/* Duration */}
         {duration && (
           <div className="text-sm text-muted-foreground">
-            ⚡ {duration}ms
+{duration}ms
           </div>
         )}
       </div>
@@ -74,6 +68,6 @@ export function StepContainer({
       <div className="pl-8">
         {children}
       </div>
-    </motion.div>
+    </div>
   );
 }
