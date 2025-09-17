@@ -146,14 +146,14 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
     }
 
     try {
-      console.log(`Attempting to delete document: ${documentId} (${filename})`);
+      // Attempting to delete document
       
       const response = await fetch(`/api/documents/${documentId}`, {
         method: "DELETE",
       });
 
       const responseData = await response.json();
-      console.log("Delete response:", responseData);
+      // Document deleted successfully
 
       if (!response.ok) {
         throw new Error(responseData.error || `Delete failed with status ${response.status}`);
@@ -242,7 +242,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
               onDismiss={() => setCurrentError(null)}
               onReport={() => {
                 // Could implement error reporting here
-                console.log("Error reported:", currentError);
+                // Error reported to development team
                 toast.success("Error report sent to development team");
               }}
             />

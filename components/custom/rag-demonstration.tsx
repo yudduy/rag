@@ -74,7 +74,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         break;
         
       default:
-        console.log('Unknown RAG event type:', event.type);
+        // Unknown RAG event type - silently ignored in production
     }
   }, []);
 
@@ -90,7 +90,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         eventSource = new EventSource('/api/rag-demonstration/events');
 
         eventSource.onopen = () => {
-          console.log('RAG Demonstration SSE connected');
+          // RAG Demonstration SSE connected
           setIsConnected(true);
         };
 
@@ -113,7 +113,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         };
 
         eventSource.onerror = (error) => {
-          console.log('RAG Demonstration SSE disconnected');
+          // RAG Demonstration SSE disconnected
           setIsConnected(false);
           eventSource?.close();
           

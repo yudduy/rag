@@ -11,11 +11,11 @@ export async function GET() {
 
     const ragCore = getPineconeRAGCore();
     
-    console.log(`🧪 Debug RAG for user: ${session.user.id}`);
+    // Debug RAG for authenticated user
     
     // Test 1: Get user documents (from Pinecone metadata)
     const userDocs = await ragCore.getUserDocuments(session.user.id);
-    console.log(`📄 User documents from Pinecone:`, userDocs);
+    // Retrieved user documents from Pinecone
     
     // Test 2: Try a very generic query with low threshold
     const testQueries = [
