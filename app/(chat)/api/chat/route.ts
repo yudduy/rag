@@ -214,7 +214,7 @@ export async function POST(request: Request) {
           assemblyStrategy: 'Relevance-based concatenation'
         });
         
-        console.log(`✅ RAG context created: ${ragContext.length} characters`);
+        // RAG context created successfully
       } else {
         ragDemoManager.updateContextAssemblyStep(ragSessionId, 'completed', {
           selectedDocuments: [],
@@ -222,7 +222,7 @@ export async function POST(request: Request) {
           contextPreview: '',
           assemblyStrategy: 'No documents selected'
         });
-        console.log(`❌ No documents retrieved for query: "${latestUserMessage}"`);
+        // No documents retrieved for query
       }
     } catch (ragError) {
       console.error('RAG retrieval error:', ragError);
@@ -239,13 +239,7 @@ export async function POST(request: Request) {
   // Check if user is asking about research papers or document analysis
   const isResearchPaperQuery = /research\s+papers?|analyze.*papers?|paper.*analysis|document.*analysis|analyze.*research|study.*papers?/i.test(latestUserMessage);
 
-  // Debug RAG context
-  console.log(`🔍 RAG Context Debug:`, {
-    hasContext: !!ragContext,
-    contextLength: ragContext.length,
-    sourcesCount: ragSources.length,
-    contextPreview: ragContext.substring(0, 200) + '...'
-  });
+  // RAG context prepared for LLM
 
   // Build system prompt with RAG context
   const systemPrompt = ragContext 
@@ -284,11 +278,7 @@ export async function POST(request: Request) {
        - You can still answer questions based on already-indexed documents
        - Let users know that more comprehensive answers will be available once all documents are fully indexed`;
 
-  console.log(`🤖 System prompt being sent to LLM:`, {
-    hasRagContext: systemPrompt.includes('DOCUMENT CONTEXT:'),
-    promptLength: systemPrompt.length,
-    promptPreview: systemPrompt.substring(0, 300) + '...'
-  });
+  // System prompt prepared with RAG context
 
   // Handle RAG context injection for Gemini
   let finalMessages = coreMessages;
