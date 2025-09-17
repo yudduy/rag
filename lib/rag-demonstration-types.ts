@@ -94,7 +94,7 @@ export interface RAGDemonstrationSession {
 }
 
 export interface RAGDemonstrationEvent {
-  type: 'session_start' | 'step_start' | 'step_progress' | 'step_complete' | 'session_complete' | 'error';
+  type: 'session_start' | 'step_start' | 'step_update' | 'step_progress' | 'step_complete' | 'step_error' | 'session_complete' | 'session_error';
   sessionId: string;
   stepId?: string;
   data: any;
