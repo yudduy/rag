@@ -49,6 +49,7 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
+    const accessPreference = formData.get("access") as string;
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -75,9 +76,28 @@ export async function POST(request: Request) {
     const sanitizedFilename = sanitizeFilename(originalFilename);
     const fileBuffer = await file.arrayBuffer();
 
+    // Determine file access level
+    const sensitiveTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'text/plain',
+      'text/markdown'
+    ];
+    
+    let access: "public" | "private";
+    
+    if (accessPreference && (accessPreference === "public" || accessPreference === "private")) {
+      // Honor explicit user preference
+      access = accessPreference as "public" | "private";
+    } else {
+      // Default based on file type - sensitive types are private by default
+      access = sensitiveTypes.includes(file.type) ? "private" : "public";
+    }
+
     try {
       const data = await put(sanitizedFilename, fileBuffer, {
-        access: "public",
+        access,
       });
 
       return NextResponse.json(data);

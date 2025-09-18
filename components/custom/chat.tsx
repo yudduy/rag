@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { Message as PreviewMessage } from "@/components/custom/message";
 import { useScrollToBottom } from "@/components/custom/use-scroll-to-bottom";
+import { ExtendedMessage, hasRAGSources } from "@/lib/types";
 
 import { MultimodalInput } from "./multimodal-input";
 import { Overview } from "./overview";
@@ -52,7 +53,7 @@ export function Chat({
               content={message.content}
               attachments={message.experimental_attachments}
               toolInvocations={message.toolInvocations}
-              ragSources={(message as any).ragSources}
+              ragSources={hasRAGSources(message) ? message.ragSources : undefined}
             />
           ))}
 

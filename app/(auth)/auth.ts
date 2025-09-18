@@ -10,6 +10,11 @@ interface ExtendedSession extends Session {
   user: User;
 }
 
+interface Credentials {
+  email: string;
+  password: string;
+}
+
 export const {
   handlers: { GET, POST },
   auth,
@@ -20,7 +25,7 @@ export const {
   providers: [
     Credentials({
       credentials: {},
-      async authorize({ email, password }: any) {
+      async authorize({ email, password }: Credentials) {
         if (!email || !password) return null;
         
         let users = await getUser(email);

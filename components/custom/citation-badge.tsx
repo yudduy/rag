@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { FileIcon } from "./icons";
+import { truncateFilename } from "@/lib/string-utils";
 
 export interface Citation {
   id: string;
@@ -20,13 +21,6 @@ interface CitationBadgeProps {
 export function CitationBadge({ citation }: CitationBadgeProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const truncateFilename = (filename: string, maxLength: number = 24) => {
-    if (filename.length <= maxLength) return filename;
-    const ext = filename.split('.').pop();
-    const name = filename.substring(0, filename.lastIndexOf('.'));
-    const truncatedName = name.substring(0, maxLength - ext!.length - 4) + '...';
-    return `${truncatedName}.${ext}`;
-  };
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
