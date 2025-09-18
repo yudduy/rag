@@ -7,9 +7,13 @@ import {
   RAGDemonstrationSession, 
   RAGDemonstrationEvent,
   QueryEmbeddingStep,
+  QueryEmbeddingData,
   DocumentRetrievalStep,
+  DocumentRetrievalData,
   ContextAssemblyStep,
+  ContextAssemblyData,
   ResponseGenerationStep,
+  ResponseGenerationData,
   RetrievedDocument
 } from './rag-demonstration-types';
 
@@ -85,7 +89,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.queryEmbedding.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...(session.steps.queryEmbedding.data ?? {}), ...(data ?? {}) } : session.steps.queryEmbedding.data,
+      data: data ? { ...(session.steps.queryEmbedding.data ?? {}), ...data } as QueryEmbeddingData : session.steps.queryEmbedding.data,
       error
     };
 
@@ -118,7 +122,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.documentRetrieval.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...(session.steps.documentRetrieval.data ?? {}), ...(data ?? {}) } : session.steps.documentRetrieval.data,
+      data: data ? { ...(session.steps.documentRetrieval.data ?? {}), ...data } as DocumentRetrievalData : session.steps.documentRetrieval.data,
       error
     };
 
@@ -151,7 +155,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.contextAssembly.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...(session.steps.contextAssembly.data ?? {}), ...(data ?? {}) } : session.steps.contextAssembly.data,
+      data: data ? { ...(session.steps.contextAssembly.data ?? {}), ...data } as ContextAssemblyData : session.steps.contextAssembly.data,
       error
     };
 
@@ -319,8 +323,19 @@ class RAGDemonstrationManager {
 export const ragDemoManager = new RAGDemonstrationManager();
 
 // Clean up old sessions every 10 minutes
+let cleanupInterval: NodeJS.Timeout | undefined;
+
+// Clean up old sessions every 10 minutes
 if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
+  cleanupInterval = setInterval(() => {
     ragDemoManager.cleanup();
   }, 10 * 60 * 1000);
+}
+
+// Export a function to clear the interval if needed
+export function stopCleanup() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = undefined;
+  }
 }

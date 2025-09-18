@@ -16,16 +16,13 @@ export async function DELETE(
     }
 
     const documentId = params.id;
-    
-    // Get document to verify ownership
-    const document = await getDocumentById({ id: documentId });
-    
-    if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    if (!documentId || typeof documentId !== "string") {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
-
-    if (document.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    // Fetch and verify ownership; unify 404 to prevent enumeration
+    const document = await getDocumentById({ id: documentId });
+    if (!document || document.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
     // Delete from RAG system
@@ -68,18 +65,17 @@ export async function GET(
 
     const documentId = params.id;
     
-    // Get document
-    const document = await getDocumentById({ id: documentId });
+    // Validate document ID
+    if (!documentId || typeof documentId !== "string") {
+      return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+    }
     
-    if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    // Fetch and verify ownership; unify 404 to prevent enumeration
+    const document = await getDocumentById({ id: documentId });
+    if (!document || document.userId !== session.user.id) {
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
 
-    if (document.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Return document info (without full content for privacy)
     return NextResponse.json({
       id: document.id,
       filename: document.filename,

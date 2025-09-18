@@ -19,4 +19,8 @@ EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-ALTER TABLE "User" ADD CONSTRAINT "User_email_unique" UNIQUE("email");
+DO $$ BEGIN
+ ALTER TABLE "User" ADD CONSTRAINT "User_email_unique" UNIQUE("email");
+EXCEPTION
+ WHEN duplicate_object THEN null;
+END $$;

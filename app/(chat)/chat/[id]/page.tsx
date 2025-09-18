@@ -9,7 +9,13 @@ import { convertToUIMessages } from "@/lib/utils";
 
 export default async function Page({ params }: { params: any }) {
   const { id } = params;
-  const chatFromDb = await getChatById({ id });
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    notFound();
+  }
+  
+  const chatFromDb = await getChatById({ id, userId: session.user.id });
 
   if (!chatFromDb) {
     notFound();
@@ -20,12 +26,6 @@ export default async function Page({ params }: { params: any }) {
     ...chatFromDb,
     messages: convertToUIMessages(chatFromDb.messages as Array<CoreMessage>),
   };
-
-  const session = await auth();
-
-  if (!session || !session.user) {
-    return notFound();
-  }
 
   if (session.user.id !== chat.userId) {
     return notFound();

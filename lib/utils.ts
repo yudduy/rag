@@ -158,7 +158,7 @@ export function convertToUIMessages(
         ? (() => {
             try {
               const ragAttachment = (message as any).experimental_attachments.find((att: any) => att.name === 'rag-sources');
-              if (ragAttachment?.url.startsWith('data:application/json;base64,')) {
+              if (ragAttachment?.url?.startsWith('data:application/json;base64,')) {
                 const base64Data = ragAttachment.url.split(',')[1];
                 
                 // Browser-safe base64 decoding

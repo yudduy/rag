@@ -3,7 +3,8 @@
  * Run with: node scripts/debug-rag.js
  */
 
-const { getPineconeRAGCore } = require('../lib/pinecone-rag-core');
+require('ts-node/register');
+const { getPineconeRAGCore } = require('../lib/pinecone-rag-core.ts');
 
 async function testRAGSystem() {
   console.log('🧪 Testing RAG System...\n');

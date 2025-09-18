@@ -42,7 +42,13 @@ async function checkUser() {
     }
 
     console.log('Checking database for user...');
-    console.log('Email:', testEmail.replace(/(.{2}).*@/, '$1***@')); // Mask email
+    const maskEmail = (e) => {
+      const [local, domain = ''] = String(e).split('@');
+      if (!local) return '***';
+      const head = local.slice(0, Math.min(2, local.length));
+      return `${head}***@${domain}`;
+    };
+    console.log('Email:', maskEmail(testEmail)); // Mask email
     console.log('Session User ID:', testUserId.slice(-8)); // Show only last 8 chars
     console.log('---');
 

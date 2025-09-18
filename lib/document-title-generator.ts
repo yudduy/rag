@@ -22,7 +22,11 @@ export class DocumentTitleGenerator {
     
     try {
       // Clean and normalize content for analysis
-      const cleanContent = content.trim().replace(/\s+/g, ' ').substring(0, 2000);
+      const normalized = content.replace(/\r\n/g, '\n').trim();
+      const cleanContent = normalized
+        .replace(/[ \t]+/g, ' ')      // collapse spaces/tabs
+        .replace(/\n{3,}/g, '\n\n')   // limit excessive blank lines
+        .substring(0, 2000);
       
       if (!cleanContent) {
         return fallbackToFilename ? this.cleanFilename(filename) : 'Untitled Document';

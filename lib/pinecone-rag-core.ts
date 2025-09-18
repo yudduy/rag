@@ -363,13 +363,20 @@ export class PineconeRAGCore {
     try {
       const namespace = this.getUserNamespace(userId);
       
-      // Query all vectors in user's namespace
-      const queryResponse = await this.index.namespace(namespace).query({
-        vector: new Array(this.embeddings.getDimensions()).fill(0), // Dummy vector
-        topK: 10000, // Large number to get all documents
-        includeMetadata: true,
-        includeValues: false,
+      // Use list API to enumerate vectors in user's namespace
+      const listResponse = await this.index.namespace(namespace).listPaginated({
+        prefix: '', // List all vectors in namespace
+        limit: 10000,
       });
+
+      // Fetch metadata for the listed vectors
+      const vectorIds = listResponse.vectors?.map((v: any) => v.id) || [];
+      
+      if (vectorIds.length === 0) {
+        return [];
+      }
+
+      const fetchResponse = await this.index.namespace(namespace).fetch(vectorIds);
 
       // Group by filename and aggregate
       const documentMap = new Map<string, {
@@ -379,9 +386,9 @@ export class PineconeRAGCore {
         upload_date: string;
       }>();
 
-      queryResponse.matches?.forEach((match: any) => {
-        const metadata = match.metadata;
-        if (metadata && !metadata.deleted) {
+      Object.values(fetchResponse.records || {}).forEach((record: any) => {
+        const metadata = record.metadata;
+        if (metadata && !metadata.deleted && metadata.user_id === userId) {
           const filename = metadata.source;
           
           if (!documentMap.has(filename)) {
@@ -416,27 +423,13 @@ export class PineconeRAGCore {
     try {
       const namespace = this.getUserNamespace(userId);
       
-      // Find all vectors for this document
-      const queryResponse = await this.index.namespace(namespace).query({
-        vector: new Array(this.embeddings.getDimensions()).fill(0), // Dummy vector
-        topK: 10000, // Large number to get all chunks
-        includeMetadata: true,
-        includeValues: false,
-        filter: {
-          source: filename,
-          user_id: userId,
-        },
+      // Use server-side filtered delete instead of querying first
+      await this.index.namespace(namespace).deleteMany({
+        filter: { 
+          source: filename, 
+          user_id: userId 
+        }
       });
-
-      // Extract vector IDs to delete
-      const vectorIds = queryResponse.matches?.map((match: any) => match.id) || [];
-      
-      if (vectorIds.length === 0) {
-        return false; // Document not found
-      }
-
-      // Delete vectors from Pinecone
-      await this.index.namespace(namespace).deleteMany(vectorIds);
       
       return true;
     } catch (error) {

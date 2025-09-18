@@ -166,14 +166,22 @@ export class DocumentProcessor {
    * Validate file type by extension and mime type
    */
   static isValidFileType(filename: string, mimeType: string): boolean {
-    const extension = filename.toLowerCase().split('.').pop();
-    const supportedExtensions = Object.values(SupportedFileTypes);
+    // Check if mimeType is supported
+    if (!(mimeType in SupportedFileTypes)) {
+      return false;
+    }
     
-    return (
-      mimeType in SupportedFileTypes &&
-      extension !== undefined &&
-      supportedExtensions.includes(extension as SupportedFileExtension)
-    );
+    // Normalize the extension
+    const extension = filename.toLowerCase().split('.').pop();
+    if (extension === undefined) {
+      return false;
+    }
+    
+    // Get the expected extension for this mimeType
+    const expectedExtension = SupportedFileTypes[mimeType as SupportedMimeType];
+    
+    // Verify the normalized extension matches the expected extension for this mimeType
+    return extension === expectedExtension;
   }
 
   /**
