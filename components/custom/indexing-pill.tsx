@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { LoaderIcon, FileIcon, CheckCircle } from "./icons";
 import { Button } from "@/components/ui/button";
+import { truncateFilename } from "@/lib/string-utils";
 
 export interface IndexingStatus {
   filename: string;
@@ -68,13 +69,6 @@ export function IndexingPill({ status, onDismiss }: IndexingPillProps) {
 
   const Icon = statusIcons[status.status];
   const isLoading = status.status !== 'completed';
-  const truncateFilename = (filename: string, maxLength: number = 20) => {
-    if (filename.length <= maxLength) return filename;
-    const ext = filename.split('.').pop();
-    const name = filename.substring(0, filename.lastIndexOf('.'));
-    const truncatedName = name.substring(0, maxLength - ext!.length - 4) + '...';
-    return `${truncatedName}.${ext}`;
-  };
 
   return (
     <AnimatePresence>

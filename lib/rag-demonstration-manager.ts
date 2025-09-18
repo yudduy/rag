@@ -77,15 +77,14 @@ class RAGDemonstrationManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const startTime = session.steps.queryEmbedding.startTime || Date.now();
-    const endTime = status === 'completed' || status === 'error' ? Date.now() : undefined;
+    const { startTime, endTime, duration } = this.calculateTiming(session.steps.queryEmbedding, status);
 
     session.steps.queryEmbedding = {
       ...session.steps.queryEmbedding,
       status,
       startTime: session.steps.queryEmbedding.startTime || startTime,
       endTime,
-      duration: endTime ? endTime - startTime : undefined,
+      duration,
       data: data ? { ...session.steps.queryEmbedding.data, ...data } as any : session.steps.queryEmbedding.data,
       error
     };
@@ -111,15 +110,14 @@ class RAGDemonstrationManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const startTime = session.steps.documentRetrieval.startTime || Date.now();
-    const endTime = status === 'completed' || status === 'error' ? Date.now() : undefined;
+    const { startTime, endTime, duration } = this.calculateTiming(session.steps.documentRetrieval, status);
 
     session.steps.documentRetrieval = {
       ...session.steps.documentRetrieval,
       status,
       startTime: session.steps.documentRetrieval.startTime || startTime,
       endTime,
-      duration: endTime ? endTime - startTime : undefined,
+      duration,
       data: data ? { ...session.steps.documentRetrieval.data, ...data } as any : session.steps.documentRetrieval.data,
       error
     };
@@ -145,15 +143,14 @@ class RAGDemonstrationManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const startTime = session.steps.contextAssembly.startTime || Date.now();
-    const endTime = status === 'completed' || status === 'error' ? Date.now() : undefined;
+    const { startTime, endTime, duration } = this.calculateTiming(session.steps.contextAssembly, status);
 
     session.steps.contextAssembly = {
       ...session.steps.contextAssembly,
       status,
       startTime: session.steps.contextAssembly.startTime || startTime,
       endTime,
-      duration: endTime ? endTime - startTime : undefined,
+      duration,
       data: data ? { ...session.steps.contextAssembly.data, ...data } as any : session.steps.contextAssembly.data,
       error
     };
@@ -179,15 +176,14 @@ class RAGDemonstrationManager {
     const session = this.sessions.get(sessionId);
     if (!session) return;
 
-    const startTime = session.steps.responseGeneration.startTime || Date.now();
-    const endTime = status === 'completed' || status === 'error' ? Date.now() : undefined;
+    const { startTime, endTime, duration } = this.calculateTiming(session.steps.responseGeneration, status);
 
     session.steps.responseGeneration = {
       ...session.steps.responseGeneration,
       status,
       startTime: session.steps.responseGeneration.startTime || startTime,
       endTime,
-      duration: endTime ? endTime - startTime : undefined,
+      duration,
       data: data ? { ...session.steps.responseGeneration.data, ...data } as any : session.steps.responseGeneration.data,
       error
     };
@@ -262,6 +258,14 @@ class RAGDemonstrationManager {
         }
       }
     };
+  }
+
+  private calculateTiming(currentStep: any, status: string) {
+    const startTime = currentStep.startTime || Date.now();
+    const endTime = status === 'completed' || status === 'error' ? Date.now() : undefined;
+    const duration = endTime ? endTime - startTime : undefined;
+    
+    return { startTime, endTime, duration };
   }
 
   /**

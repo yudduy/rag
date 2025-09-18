@@ -160,7 +160,13 @@ export function MultimodalInput({
     }
 
     // Determine if this is a document for RAG processing
-    const documentTypes = ['text/plain', 'text/markdown', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const documentTypes = [
+      'text/plain', 
+      'text/markdown', 
+      'application/pdf',
+      'application/x-pdf',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
     const isDocument = documentTypes.includes(file.type);
     
     // Route to appropriate endpoint

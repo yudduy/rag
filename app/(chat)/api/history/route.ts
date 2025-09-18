@@ -8,6 +8,11 @@ export async function GET() {
     return Response.json("Unauthorized!", { status: 401 });
   }
 
-  const chats = await getChatsByUserId({ id: session.user.id });
-  return Response.json(chats);
+  try {
+    const chats = await getChatsByUserId({ id: session.user.id });
+    return Response.json(chats);
+  } catch (error) {
+    console.error("Failed to load chats:", error);
+    return Response.json({ error: 'Failed to load chats' }, { status: 500 });
+  }
 }

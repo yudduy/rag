@@ -32,7 +32,11 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+tsconfig.tsbuildinfo
 next-env.d.ts
 
 # Workaround for pdf-parse build issue
 /test/.next/
+
+# One-time utility scripts with sensitive data
+scripts/create-missing-user.js

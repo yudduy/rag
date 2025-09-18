@@ -27,7 +27,16 @@ export const fetcher = async (url: string) => {
       "An error occurred while fetching the data.",
     ) as ApplicationError;
 
-    error.info = await res.json();
+    try {
+      error.info = await res.json();
+    } catch (parseError) {
+      // If response is not JSON, fall back to text
+      try {
+        error.info = await res.text();
+      } catch (textError) {
+        error.info = "Non-JSON response";
+      }
+    }
     error.status = res.status;
 
     throw error;
@@ -156,7 +165,22 @@ export function convertToUIMessages(
               const ragAttachment = (message as any).experimental_attachments.find((att: any) => att.name === 'rag-sources');
               if (ragAttachment?.url.startsWith('data:application/json;base64,')) {
                 const base64Data = ragAttachment.url.split(',')[1];
-                const jsonData = Buffer.from(base64Data, 'base64').toString('utf-8');
+                
+                // Browser-safe base64 decoding
+                let jsonData: string;
+                if (typeof globalThis.atob !== 'undefined') {
+                  // Browser environment
+                  const binaryString = globalThis.atob(base64Data);
+                  const bytes = new Uint8Array(binaryString.length);
+                  for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                  }
+                  jsonData = new TextDecoder('utf-8').decode(bytes);
+                } else {
+                  // Node.js environment fallback
+                  jsonData = Buffer.from(base64Data, 'base64').toString('utf-8');
+                }
+                
                 return JSON.parse(jsonData);
               }
             } catch (error) {

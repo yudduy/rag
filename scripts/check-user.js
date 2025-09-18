@@ -30,13 +30,20 @@ async function checkUser() {
     const client = postgres(url.toString(), { max: 1 });
     const db = drizzle(client);
 
-    // Check for the specific user from the logs
-    const testEmail = 'kduynguy@gmail.com';
-    const testUserId = 'b1146900-7284-4e3a-910e-b730847f4db8';
+    // Get user details from environment variables or command line arguments
+    const testEmail = process.env.CHECK_USER_EMAIL || process.argv[2];
+    const testUserId = process.env.CHECK_USER_ID || process.argv[3];
+
+    if (!testEmail || !testUserId) {
+      console.error('Error: Missing required parameters');
+      console.error('Usage: node check-user.js <email> <user-id>');
+      console.error('Or set CHECK_USER_EMAIL and CHECK_USER_ID environment variables');
+      process.exit(1);
+    }
 
     console.log('Checking database for user...');
-    console.log('Email:', testEmail);
-    console.log('Session User ID:', testUserId);
+    console.log('Email:', testEmail.replace(/(.{2}).*@/, '$1***@')); // Mask email
+    console.log('Session User ID:', testUserId.slice(-8)); // Show only last 8 chars
     console.log('---');
 
     // Query by email
