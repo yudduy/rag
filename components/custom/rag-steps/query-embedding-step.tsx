@@ -20,15 +20,7 @@ export function QueryEmbeddingStepComponent({ step, config }: QueryEmbeddingStep
     }
   };
 
-  const getStatusColor = () => {
-    switch (step.status) {
-      case 'pending': return 'text-muted-foreground';
-      case 'processing': return 'text-blue-600 dark:text-blue-400';
-      case 'completed': return 'text-green-600 dark:text-green-400';
-      case 'error': return 'text-red-600 dark:text-red-400';
-      default: return 'text-muted-foreground';
-    }
-  };
+  // Removed unused getStatusColor function
 
   return (
     <StepContainer

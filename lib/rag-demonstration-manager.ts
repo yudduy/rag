@@ -85,7 +85,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.queryEmbedding.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...session.steps.queryEmbedding.data, ...data } as any : session.steps.queryEmbedding.data,
+      data: data ? { ...(session.steps.queryEmbedding.data ?? {}), ...(data ?? {}) } : session.steps.queryEmbedding.data,
       error
     };
 
@@ -118,7 +118,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.documentRetrieval.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...session.steps.documentRetrieval.data, ...data } as any : session.steps.documentRetrieval.data,
+      data: data ? { ...(session.steps.documentRetrieval.data ?? {}), ...(data ?? {}) } : session.steps.documentRetrieval.data,
       error
     };
 
@@ -151,7 +151,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.contextAssembly.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...session.steps.contextAssembly.data, ...data } as any : session.steps.contextAssembly.data,
+      data: data ? { ...(session.steps.contextAssembly.data ?? {}), ...(data ?? {}) } : session.steps.contextAssembly.data,
       error
     };
 
@@ -184,7 +184,7 @@ class RAGDemonstrationManager {
       startTime: session.steps.responseGeneration.startTime || startTime,
       endTime,
       duration,
-      data: data ? { ...session.steps.responseGeneration.data, ...data } as any : session.steps.responseGeneration.data,
+      data: data ? { ...(session.steps.responseGeneration.data ?? {}), ...(data ?? {}) } : session.steps.responseGeneration.data,
       error
     };
 

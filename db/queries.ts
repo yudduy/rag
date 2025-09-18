@@ -6,6 +6,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { user, chat, User, reservation, document, Document } from "./schema";
+import { Message } from "ai";
 
 // Optionally, if not using email/pass login, you can
 // use the Drizzle adapter for Auth.js / NextAuth
@@ -21,11 +22,9 @@ const connectionString = process.env.POSTGRES_URL
   : 'postgres://dummy:dummy@localhost:5432/dummy';
 
 let client = postgres(connectionString, { 
-  max: 1,
-  // Prevent connections during build
-  transform: process.env.NODE_ENV === 'production' && !process.env.POSTGRES_URL 
-    ? undefined 
-    : postgres.camel
+  max: parseInt(process.env.DB_MAX_POOL || '10', 10),
+  // Configurable transform option
+  transform: process.env.POSTGRES_USE_CAMEL === 'true' ? postgres.camel : undefined
 });
 let db = drizzle(client);
 
@@ -61,7 +60,7 @@ export async function saveChat({
   userId,
 }: {
   id: string;
-  messages: any;
+  messages: Array<Message>;
   userId: string;
 }) {
   try {
@@ -129,22 +128,32 @@ export async function createReservation({
   userId: string;
   details: any;
 }) {
-  return await db.insert(reservation).values({
-    id,
-    createdAt: new Date(),
-    userId,
-    hasCompletedPayment: false,
-    details: JSON.stringify(details),
-  });
+  try {
+    return await db.insert(reservation).values({
+      id,
+      createdAt: new Date(),
+      userId,
+      hasCompletedPayment: false,
+      details: JSON.stringify(details),
+    });
+  } catch (error) {
+    console.error(`Failed to create reservation for user ${userId} with id ${id}:`, error);
+    throw error;
+  }
 }
 
 export async function getReservationById({ id }: { id: string }) {
-  const [selectedReservation] = await db
-    .select()
-    .from(reservation)
-    .where(eq(reservation.id, id));
+  try {
+    const [selectedReservation] = await db
+      .select()
+      .from(reservation)
+      .where(eq(reservation.id, id));
 
-  return selectedReservation;
+    return selectedReservation;
+  } catch (error) {
+    console.error(`Failed to get reservation by id ${id}:`, error);
+    throw error;
+  }
 }
 
 export async function updateReservation({
@@ -154,12 +163,17 @@ export async function updateReservation({
   id: string;
   hasCompletedPayment: boolean;
 }) {
-  return await db
-    .update(reservation)
-    .set({
-      hasCompletedPayment,
-    })
-    .where(eq(reservation.id, id));
+  try {
+    return await db
+      .update(reservation)
+      .set({
+        hasCompletedPayment,
+      })
+      .where(eq(reservation.id, id));
+  } catch (error) {
+    console.error(`Failed to update reservation ${id}:`, error);
+    throw error;
+  }
 }
 
 // Document queries

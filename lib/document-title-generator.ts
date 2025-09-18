@@ -222,15 +222,15 @@ export class DocumentTitleGenerator {
    * Check if a string looks like a person's name
    */
   private static looksLikeName(text: string): boolean {
-    // Simple heuristics for name detection
+    // Inclusive heuristics for name detection using Unicode
     const words = text.trim().split(/\s+/);
     
-    // Should be 2-4 words
-    if (words.length < 2 || words.length > 4) return false;
+    // Should be 1-4 words (not forcing 2-4)
+    if (words.length < 1 || words.length > 4) return false;
     
-    // Each word should be capitalized and contain only letters
+    // Each word should contain Unicode letters and common name punctuation
     return words.every(word => 
-      /^[A-Z][a-z]+$/.test(word) && word.length > 1
+      /^[\p{L}][\p{L}''-]*$/u.test(word) && word.length > 0
     );
   }
 
