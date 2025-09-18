@@ -256,10 +256,10 @@ export function validateStage(stage: IndexingState, data: any): { valid: boolean
       break;
       
     case 'chunking':
-      if (!data.chunks || data.chunks.length < VALIDATION_SCHEMAS.chunking.minChunks) {
+      if (typeof data.chunks !== 'number' || data.chunks < VALIDATION_SCHEMAS.chunking.minChunks) {
         return { valid: false, error: 'No chunks created' };
       }
-      if (data.chunks.length > VALIDATION_SCHEMAS.chunking.maxChunks) {
+      if (data.chunks > VALIDATION_SCHEMAS.chunking.maxChunks) {
         return { valid: false, error: 'Too many chunks created' };
       }
       break;

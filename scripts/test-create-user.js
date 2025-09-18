@@ -8,6 +8,7 @@ const { genSaltSync, hashSync } = require('bcrypt-ts');
 const { user } = require('../db/schema');
 
 async function testCreateUser() {
+  let client;
   try {
     const connectionString = process.env.POSTGRES_URL;
     if (!connectionString) {
@@ -18,7 +19,7 @@ async function testCreateUser() {
     const url = new URL(connectionString);
     url.searchParams.set('sslmode', 'require');
     
-    const client = postgres(url.toString(), { max: 1 });
+    client = postgres(url.toString(), { max: 1 });
     const db = drizzle(client);
 
     console.log('Testing user creation...');
@@ -55,10 +56,13 @@ async function testCreateUser() {
       console.error('Full error:', createError);
     }
 
-    await client.end();
   } catch (error) {
     console.error('❌ Script error:', error);
     process.exit(1);
+  } finally {
+    if (client) {
+      await client.end();
+    }
   }
 }
 

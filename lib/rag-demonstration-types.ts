@@ -3,41 +3,41 @@
  * Defines the data structures for real-time RAG pipeline visualization
  */
 
-export interface RAGDemonstrationStep {
+export interface RAGDemonstrationStep<T = any> {
   id: string;
   name: string;
   status: 'pending' | 'processing' | 'completed' | 'error';
   startTime?: number;
   endTime?: number;
   duration?: number;
-  data?: any;
+  data?: T;
   error?: string;
 }
 
-export interface QueryEmbeddingStep extends RAGDemonstrationStep {
-  data?: {
-    originalQuery: string;
-    processedQuery: string;
-    embeddingModel: string;
-    embeddingDimensions: number;
-    embeddingVector?: number[]; // Truncated for display
-    embeddingPreview: string; // First few dimensions as string
-  };
+export interface QueryEmbeddingData {
+  originalQuery: string;
+  processedQuery: string;
+  embeddingModel: string;
+  embeddingDimensions: number;
+  embeddingVector?: number[]; // Truncated for display
+  embeddingPreview: string; // First few dimensions as string
 }
 
-export interface DocumentRetrievalStep extends RAGDemonstrationStep {
-  data?: {
-    searchQuery: string;
-    namespace: string;
-    searchParams: {
-      topK: number;
-      threshold: number;
-    };
-    totalResults: number;
-    filteredResults: number;
-    documents: RetrievedDocument[];
+export interface QueryEmbeddingStep extends RAGDemonstrationStep<QueryEmbeddingData> {}
+
+export interface DocumentRetrievalData {
+  searchQuery: string;
+  namespace: string;
+  searchParams: {
+    topK: number;
+    threshold: number;
   };
+  totalResults: number;
+  filteredResults: number;
+  documents: RetrievedDocument[];
 }
+
+export interface DocumentRetrievalStep extends RAGDemonstrationStep<DocumentRetrievalData> {}
 
 export interface RetrievedDocument {
   id: string;
@@ -53,29 +53,46 @@ export interface RetrievedDocument {
   };
 }
 
-export interface ContextAssemblyStep extends RAGDemonstrationStep {
-  data?: {
-    selectedDocuments: RetrievedDocument[];
-    contextLength: number;
-    contextPreview: string;
-    assemblyStrategy: string;
+export interface ContextAssemblyData {
+  selectedDocuments: RetrievedDocument[];
+  contextLength: number;
+  contextPreview: string;
+  assemblyStrategy: string;
+}
+
+export interface ContextAssemblyStep extends RAGDemonstrationStep<ContextAssemblyData> {}
+
+export interface ResponseGeneration {
+  model: string;
+  prompt: string;
+  promptLength: number;
+  contextLength: number;
+  response?: string;
+  responseLength: number;
+  finishReason?: string; // e.g., "stop" | "length" | ...
+  tokenUsage?: {
+    prompt: number;
+    completion: number;
+    total: number;
   };
 }
 
-export interface ResponseGenerationStep extends RAGDemonstrationStep {
-  data?: {
-    model: string;
-    prompt: string;
-    promptLength: number;
-    contextLength: number;
-    responseLength: number;
-    tokenUsage?: {
-      prompt: number;
-      completion: number;
-      total: number;
-    };
+export interface ResponseGenerationData {
+  model?: string;
+  prompt?: string;
+  promptLength?: number;
+  contextLength?: number;
+  response?: string;
+  responseLength?: number;
+  finishReason?: string;
+  tokenUsage?: {
+    prompt: number;
+    completion: number;
+    total: number;
   };
 }
+
+export interface ResponseGenerationStep extends RAGDemonstrationStep<ResponseGenerationData> {}
 
 export interface RAGDemonstrationSession {
   sessionId: string;

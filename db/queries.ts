@@ -1,7 +1,7 @@
 import "server-only";
 
 import { genSaltSync, hashSync } from "bcrypt-ts";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
@@ -72,7 +72,7 @@ export async function saveChat({
         .set({
           messages: JSON.stringify(messages),
         })
-        .where(eq(chat.id, id));
+        .where(and(eq(chat.id, id), eq(chat.userId, userId)));
     }
 
     return await db.insert(chat).values({
@@ -87,9 +87,9 @@ export async function saveChat({
   }
 }
 
-export async function deleteChatById({ id }: { id: string }) {
+export async function deleteChatById({ id, userId }: { id: string; userId: string }) {
   try {
-    return await db.delete(chat).where(eq(chat.id, id));
+    return await db.delete(chat).where(and(eq(chat.id, id), eq(chat.userId, userId)));
   } catch (error) {
     console.error("Failed to delete chat by id from database");
     throw error;
@@ -109,9 +109,12 @@ export async function getChatsByUserId({ id }: { id: string }) {
   }
 }
 
-export async function getChatById({ id }: { id: string }) {
+export async function getChatById({ id, userId }: { id: string; userId: string }) {
   try {
-    const [selectedChat] = await db.select().from(chat).where(eq(chat.id, id));
+    const [selectedChat] = await db
+      .select()
+      .from(chat)
+      .where(and(eq(chat.id, id), eq(chat.userId, userId)));
     return selectedChat;
   } catch (error) {
     console.error("Failed to get chat by id from database");

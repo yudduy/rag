@@ -16,23 +16,13 @@ export const authConfig = {
       let isOnRegister = nextUrl.pathname.startsWith("/register");
       let isOnLogin = nextUrl.pathname.startsWith("/login");
 
-      if (isLoggedIn && (isOnLogin || isOnRegister)) {
-        return Response.redirect(new URL("/", nextUrl));
+      if (isOnLogin || isOnRegister) {
+        return isLoggedIn ? Response.redirect(new URL("/", nextUrl)) : true;
       }
-
-      if (isOnRegister || isOnLogin) {
-        return true; // Always allow access to register and login pages
-      }
-
       if (isOnChat) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
+        return isLoggedIn ? true : Response.redirect(new URL("/login", nextUrl));
       }
-
-      if (isLoggedIn) {
-        return Response.redirect(new URL("/", nextUrl));
-      }
-
+      // All other routes are public by default
       return true;
     },
   },

@@ -16,7 +16,7 @@ export function useScrollToBottom<T extends HTMLElement>(): [
         // Only auto-scroll if user is near the bottom (within 100px)
         const distanceFromBottom = container.scrollHeight - (container.scrollTop + container.clientHeight);
         if (distanceFromBottom <= 100) {
-          end.scrollIntoView({ behavior: "instant", block: "end" });
+          end.scrollIntoView({ behavior: "auto", block: "end" });
         }
       });
 

@@ -500,18 +500,18 @@ export async function DELETE(request: Request) {
 
   const session = await auth();
 
-  if (!session || !session.user) {
+  if (!session || !session.user || !session.user.id) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   try {
-    const chat = await getChatById({ id });
+    const chat = await getChatById({ id, userId: session.user.id });
 
-    if (chat.userId !== session.user.id) {
-      return new Response("Unauthorized", { status: 401 });
+    if (!chat) {
+      return new Response("Not found", { status: 404 });
     }
 
-    await deleteChatById({ id });
+    await deleteChatById({ id, userId: session.user.id });
 
     return new Response("Chat deleted", { status: 200 });
   } catch (error) {

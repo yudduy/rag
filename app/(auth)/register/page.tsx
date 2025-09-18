@@ -23,7 +23,7 @@ export default function Page() {
 
   useEffect(() => {
     if (state.status === "user_exists") {
-      toast.error("Account already exists");
+      toast.error("Sign up failed. Please try again.");
     } else if (state.status === "failed") {
       toast.error("Failed to create account");
     } else if (state.status === "invalid_data") {
@@ -32,7 +32,7 @@ export default function Page() {
       toast.success("Account created successfully");
       router.refresh();
     }
-  }, [state, router]);
+  }, [state.status, router]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

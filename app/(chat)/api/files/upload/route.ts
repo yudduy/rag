@@ -4,6 +4,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import path from "path";
 
+export const runtime = "nodejs" as const;
 import { auth } from "@/app/(auth)/auth";
 
 const FileSchema = z.object({
@@ -97,7 +98,7 @@ export async function POST(request: Request) {
 
     try {
       const data = await put(sanitizedFilename, fileBuffer, {
-        access,
+        access: "public" as const,
       });
 
       return NextResponse.json(data);
