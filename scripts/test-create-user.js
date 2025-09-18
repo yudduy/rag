@@ -3,18 +3,9 @@
 // Script to test user creation directly
 const { drizzle } = require('drizzle-orm/postgres-js');
 const postgres = require('postgres');
-const { pgTable, varchar, uuid, unique } = require('drizzle-orm/pg-core');
 const { eq } = require('drizzle-orm');
 const { genSaltSync, hashSync } = require('bcrypt-ts');
-
-// Define user schema
-const user = pgTable("User", {
-  id: uuid("id").primaryKey().notNull().defaultRandom(),
-  email: varchar("email", { length: 64 }).notNull(),
-  password: varchar("password", { length: 128 }),
-}, (table) => ({
-  uniqueEmail: unique().on(table.email),
-}));
+const { user } = require('../db/schema');
 
 async function testCreateUser() {
   try {

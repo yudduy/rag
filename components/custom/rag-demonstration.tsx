@@ -83,7 +83,25 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
     if (!isVisible || !config.enableRealTimeUpdates) return;
 
     let eventSource: EventSource | null = null;
-    let reconnectTimeout: NodeJS.Timeout;
+    let reconnectTimeout: ReturnType<typeof setTimeout> | undefined;
+    let reconnectAttempt = 0;
+
+    const getReconnectDelay = () => {
+      const baseDelay = 1000; // 1 second
+      const maxDelay = 30000; // 30 seconds
+      const delay = Math.min(maxDelay, baseDelay * Math.pow(2, reconnectAttempt));
+      const jitter = delay * 0.1 * (Math.random() * 2 - 1); // ±10% jitter
+      return Math.max(0, delay + jitter);
+    };
+
+    const scheduleReconnect = () => {
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
+      const delay = getReconnectDelay();
+      reconnectAttempt++;
+      reconnectTimeout = setTimeout(connectSSE, delay);
+    };
 
     const connectSSE = () => {
       try {
@@ -92,6 +110,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
         eventSource.onopen = () => {
           // RAG Demonstration SSE connected
           setIsConnected(true);
+          reconnectAttempt = 0; // Reset reconnect counter on successful connection
         };
 
         eventSource.onmessage = (event) => {
@@ -117,16 +136,16 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
           setIsConnected(false);
           eventSource?.close();
           
-          // Attempt to reconnect after 3 seconds
-          reconnectTimeout = setTimeout(connectSSE, 3000);
+          // Schedule reconnection with exponential backoff
+          scheduleReconnect();
         };
 
       } catch (error) {
         console.error('Failed to create SSE connection:', error);
         setIsConnected(false);
         
-        // Retry connection after 5 seconds
-        reconnectTimeout = setTimeout(connectSSE, 5000);
+        // Schedule reconnection with exponential backoff
+        scheduleReconnect();
       }
     };
 
@@ -138,6 +157,7 @@ export function RAGDemonstration({ isVisible, onClose }: RAGDemonstrationProps) 
       }
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
+        reconnectTimeout = undefined;
       }
     };
   }, [isVisible, config.enableRealTimeUpdates, handleRAGEvent]);

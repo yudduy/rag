@@ -80,13 +80,8 @@ export function generateUUID(): string {
     ].join('-');
   }
   
-  // Last resort fallback using Math.random() (not cryptographically secure)
-  console.warn('Using Math.random() for UUID generation - not cryptographically secure');
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  // No secure random number generator available
+  throw new Error('Secure random number generation is not available. Cannot generate cryptographically secure UUID.');
 }
 
 function addToolMessageToChat({
