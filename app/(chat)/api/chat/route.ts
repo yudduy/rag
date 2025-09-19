@@ -96,36 +96,12 @@ export async function POST(request: Request) {
   if (session.user?.id && latestUserMessage) {
     try {
       const ragCore = getPineconeRAGCore();
-      const modelInfo = ragCore.getEmbeddingModelInfo();
-      
-      // Step 1: Query Embedding
-        originalQuery: latestUserMessage,
-        processedQuery: latestUserMessage,
-        embeddingModel: modelInfo.modelName,
-        embeddingDimensions: modelInfo.dimensions
-      });
+          const modelInfo = ragCore.getEmbeddingModelInfo();
       
       // Generate embedding (this is already done internally, but we track it)
       const embeddingStartTime = Date.now();
       const queryEmbedding = await ragCore.generateEmbedding(latestUserMessage);
       const embeddingDuration = Date.now() - embeddingStartTime;
-      
-        originalQuery: latestUserMessage,
-        processedQuery: latestUserMessage,
-        embeddingModel: modelInfo.modelName,
-        embeddingDimensions: modelInfo.dimensions,
-        embeddingVector: queryEmbedding.slice(0, 8), // First 8 dimensions for preview
-        embeddingPreview: queryEmbedding.slice(0, 8).map(v => v.toFixed(4)).join(', ')
-      });
-
-      // Step 2: Document Retrieval
-        searchQuery: latestUserMessage,
-        namespace: `user-${session.user.id}`,
-        searchParams: {
-          topK: 5,
-          threshold: 0.1
-        }
-      });
 
       const retrievalStartTime = Date.now();
       const retrievedDocs = await ragCore.retrieveDocuments(
@@ -134,34 +110,6 @@ export async function POST(request: Request) {
         { maxDocs: 5, threshold: 0.1 }
       );
       const retrievalDuration = Date.now() - retrievalStartTime;
-      
-      console.log(`📄 Retrieved ${retrievedDocs.length} documents:`, 
-        retrievedDocs.map(d => ({ source: d.source, score: d.relevance_score, contentLength: d.content.length }))
-      );
-
-        searchQuery: latestUserMessage,
-        namespace: `user-${session.user.id}`,
-        searchParams: {
-          topK: 5,
-          threshold: 0.1
-        },
-        totalResults: retrievedDocs.length,
-        filteredResults: retrievedDocs.length,
-        documents: retrievedDocs.map(doc => ({
-          id: doc.chunkId || generateUUID(),
-          source: doc.source,
-          content: doc.content,
-          snippet: doc.snippet,
-          relevanceScore: doc.relevance_score,
-          metadata: {
-            page: doc.page,
-            chunkId: doc.chunkId || generateUUID(),
-            fileType: doc.metadata?.file_type || 'unknown',
-            ...doc.metadata
-          }
-        }))
-      });
-
       // Step 3: Context Assembly
       if (retrievedDocs.length > 0) {
           selectedDocuments: retrievedDocs.map(doc => ({
