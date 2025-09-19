@@ -439,7 +439,7 @@ export class PineconeRAGCore {
   }
 
   /**
-   * Generate embedding for a text query (public method for demonstration)
+   * Generate embedding for a text query
    */
   async generateEmbedding(text: string): Promise<number[]> {
     await this.ensureInitialized();
@@ -447,7 +447,7 @@ export class PineconeRAGCore {
   }
 
   /**
-   * Get embedding model info for demonstration
+   * Get embedding model info
    */
   getEmbeddingModelInfo() {
     return {

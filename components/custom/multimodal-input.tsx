@@ -364,16 +364,6 @@ export function MultimodalInput({
         <PaperclipIcon size={14} />
       </Button>
 
-      <Link href="/demonstration">
-        <Button
-          className="rounded-full p-1.5 h-fit absolute bottom-10 right-16 m-0.5 dark:border-zinc-700"
-          variant="outline"
-          disabled={isLoading}
-          title="See how RAG works"
-        >
-          <span className="text-xs font-medium">i</span>
-        </Button>
-      </Link>
     </div>
   );
 }

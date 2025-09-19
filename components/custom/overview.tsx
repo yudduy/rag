@@ -39,7 +39,7 @@ export const Overview = () => {
           <code className="rounded-sm bg-muted-foreground/15 px-1.5 py-0.5">
             📁 Document Manager
           </code>{" "}
-          in the navbar, then ask questions about your content. The AI can also help with general tasks and provide weather information.
+          in the navbar, then ask questions about your content. The AI can also help with general tasks.
         </p>
       </div>
     </motion.div>
