@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/app/(auth)/auth";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const session = await auth();
