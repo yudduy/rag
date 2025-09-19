@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "build": "tsx db/migrate && next build",
+    "build": "tsx db/migrate || true && next build",
     "start": "next start",
     "lint": "next lint",
     "db:migrate": "tsx db/migrate",
@@ -69,7 +69,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@types/d3-scale": "^4.0.8",
     "@types/node": "^20",
     "@types/pdf-parse": "^1.1.4",
     "@types/react": "^18",

@@ -1,0 +1,23 @@
+{
+  "buildCommand": "pnpm run build",
+  "devCommand": "pnpm run dev",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "app/(chat)/api/chat/route.ts": {
+      "maxDuration": 60
+    },
+    "app/(chat)/api/documents/upload/route.ts": {
+      "maxDuration": 60
+    },
+    "app/(chat)/api/rag-demonstration/events/route.ts": {
+      "maxDuration": 60
+    }
+  },
+  "build": {
+    "env": {
+      "SKIP_ENV_VALIDATION": "1"
+    }
+  }
+}

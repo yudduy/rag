@@ -16,8 +16,21 @@ const nextConfig = {
       use: 'ignore-loader',
     });
 
+    // Optimize bundle size
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+
     return config;
   },
+  // Optimize build performance
+  swcMinify: true,
+  compress: true,
   async headers() {
     return [
       {
