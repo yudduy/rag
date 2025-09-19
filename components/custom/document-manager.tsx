@@ -8,6 +8,7 @@ import { FileIcon, TrashIcon, UploadIcon, LoaderIcon } from "@/components/custom
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ErrorPanel, ErrorDetails } from "./error-panel";
+// RAG Demonstration moved to dedicated page
 
 interface Document {
   id: string;
@@ -36,6 +37,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [currentError, setCurrentError] = useState<ErrorDetails | null>(null);
+  // RAG Demonstration removed - now available at /demonstration
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch user's documents
@@ -216,6 +218,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
         <div className="flex items-center justify-between p-6 border-b">
           <h2 className="text-xl font-semibold">Document Manager</h2>
           <div className="flex items-center gap-2">
+            {/* RAG Demonstration moved to dedicated /demonstration page */}
             <Button variant="ghost" size="sm" onClick={onClose}>
               Close
             </Button>
@@ -350,6 +353,7 @@ export function DocumentManager({ isOpen, onClose }: DocumentManagerProps) {
         </div>
       </div>
 
+      {/* RAG Demonstration moved to dedicated /demonstration page */}
     </div>
   );
 }

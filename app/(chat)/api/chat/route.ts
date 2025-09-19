@@ -10,7 +10,7 @@ import {
 } from "@/db/queries";
 import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 import { generateUUID } from "@/lib/utils";
-// Removed RAG demonstration manager for production
+import { ragDemoManager } from "@/lib/rag-demonstration-manager";
 
 export async function POST(request: Request) {
   const { id, messages }: { id: string; messages: Array<Message> } =
@@ -85,8 +85,11 @@ export async function POST(request: Request) {
   const latestUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
   
   // Create RAG demonstration session
+  const ragSessionId = generateUUID();
+  let ragDemoSession = null;
   
   if (session.user?.id && latestUserMessage) {
+    ragDemoSession = ragDemoManager.createSession(ragSessionId, session.user.id, latestUserMessage);
   }
   
   // Retrieve relevant documents using RAG with demonstration tracking
@@ -96,12 +99,39 @@ export async function POST(request: Request) {
   if (session.user?.id && latestUserMessage) {
     try {
       const ragCore = getPineconeRAGCore();
-          const modelInfo = ragCore.getEmbeddingModelInfo();
+      const modelInfo = ragCore.getEmbeddingModelInfo();
+      
+      // Step 1: Query Embedding
+      ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'processing', {
+        originalQuery: latestUserMessage,
+        processedQuery: latestUserMessage,
+        embeddingModel: modelInfo.modelName,
+        embeddingDimensions: modelInfo.dimensions
+      });
       
       // Generate embedding (this is already done internally, but we track it)
       const embeddingStartTime = Date.now();
       const queryEmbedding = await ragCore.generateEmbedding(latestUserMessage);
       const embeddingDuration = Date.now() - embeddingStartTime;
+      
+      ragDemoManager.updateQueryEmbeddingStep(ragSessionId, 'completed', {
+        originalQuery: latestUserMessage,
+        processedQuery: latestUserMessage,
+        embeddingModel: modelInfo.modelName,
+        embeddingDimensions: modelInfo.dimensions,
+        embeddingVector: queryEmbedding.slice(0, 8), // First 8 dimensions for preview
+        embeddingPreview: queryEmbedding.slice(0, 8).map(v => v.toFixed(4)).join(', ')
+      });
+
+      // Step 2: Document Retrieval
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'processing', {
+        searchQuery: latestUserMessage,
+        namespace: `user-${session.user.id}`,
+        searchParams: {
+          topK: 5,
+          threshold: 0.1
+        }
+      });
 
       const retrievalStartTime = Date.now();
       const retrievedDocs = await ragCore.retrieveDocuments(
@@ -110,8 +140,38 @@ export async function POST(request: Request) {
         { maxDocs: 5, threshold: 0.1 }
       );
       const retrievalDuration = Date.now() - retrievalStartTime;
+      
+      console.log(`📄 Retrieved ${retrievedDocs.length} documents:`, 
+        retrievedDocs.map(d => ({ source: d.source, score: d.relevance_score, contentLength: d.content.length }))
+      );
+
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'completed', {
+        searchQuery: latestUserMessage,
+        namespace: `user-${session.user.id}`,
+        searchParams: {
+          topK: 5,
+          threshold: 0.1
+        },
+        totalResults: retrievedDocs.length,
+        filteredResults: retrievedDocs.length,
+        documents: retrievedDocs.map(doc => ({
+          id: doc.chunkId || generateUUID(),
+          source: doc.source,
+          content: doc.content,
+          snippet: doc.snippet,
+          relevanceScore: doc.relevance_score,
+          metadata: {
+            page: doc.page,
+            chunkId: doc.chunkId || generateUUID(),
+            fileType: doc.metadata?.file_type || 'unknown',
+            ...doc.metadata
+          }
+        }))
+      });
+
       // Step 3: Context Assembly
       if (retrievedDocs.length > 0) {
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'processing', {
           selectedDocuments: retrievedDocs.map(doc => ({
             id: doc.chunkId || generateUUID(),
             source: doc.source,
@@ -135,6 +195,7 @@ export async function POST(request: Request) {
           .join('\n\n');
         const assemblyDuration = Date.now() - assemblyStartTime;
 
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'completed', {
           selectedDocuments: retrievedDocs.map(doc => ({
             id: doc.chunkId || generateUUID(),
             source: doc.source,
@@ -155,6 +216,7 @@ export async function POST(request: Request) {
         
         // RAG context created successfully
       } else {
+        ragDemoManager.updateContextAssemblyStep(ragSessionId, 'completed', {
           selectedDocuments: [],
           contextLength: 0,
           contextPreview: '',
@@ -166,6 +228,7 @@ export async function POST(request: Request) {
       console.error('RAG retrieval error:', ragError);
       
       // Mark current step as error
+      ragDemoManager.updateDocumentRetrievalStep(ragSessionId, 'error', undefined, 
         ragError instanceof Error ? ragError.message : 'Unknown RAG error'
       );
       
@@ -261,6 +324,8 @@ Please answer using the document context provided above. When referencing inform
   }
 
   // Step 4: Response Generation
+  if (ragDemoSession) {
+    ragDemoManager.updateResponseGenerationStep(ragSessionId, 'processing', {
       model: 'gemini-1.5-flash',
       promptLength: finalSystemPrompt.length,
       contextLength: ragContext.length
@@ -356,9 +421,11 @@ Please answer using the document context provided above. When referencing inform
     },
     onFinish: async ({ responseMessages }) => {
       // Complete RAG demonstration tracking
+      if (ragDemoSession) {
         const responseDuration = Date.now() - responseStartTime;
         const responseContent = responseMessages.map(msg => msg.content).join('');
         
+        ragDemoManager.updateResponseGenerationStep(ragSessionId, 'completed', {
           model: 'gemini-1.5-flash',
           promptLength: finalSystemPrompt.length,
           contextLength: ragContext.length,
@@ -371,6 +438,7 @@ Please answer using the document context provided above. When referencing inform
         });
 
         // Complete the entire session
+        ragDemoManager.completeSession(ragSessionId, ragSources.map(source => ({
           id: generateUUID(),
           source: source.source,
           content: source.content,

@@ -7,6 +7,7 @@ import { ReactNode } from "react";
 import { BotIcon, UserIcon } from "./icons";
 import { Markdown } from "./markdown";
 import { PreviewAttachment } from "./preview-attachment";
+import { Weather } from "./weather";
 import { CitationList, Citation } from "./citation-badge";
 import { RAGCitations, RAGSource } from "./rag-citations";
 
@@ -145,7 +146,7 @@ export const Message = ({
                 return (
                   <div key={toolCallId}>
                     {toolName === "getWeather" ? (
-                      <div className="text-sm text-gray-600">Weather data: {JSON.stringify(result)}</div>
+                      <Weather weatherAtLocation={result} />
                     ) : (
                       <div>{JSON.stringify(result, null, 2)}</div>
                     )}

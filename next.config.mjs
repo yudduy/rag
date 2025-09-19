@@ -4,6 +4,20 @@ const nextConfig = {
   images: {
     remotePatterns: [],
   },
+  webpack: (config, { isServer }) => {
+    // Ignore pdf-parse test files during build
+    config.resolve.alias = {
+      ...config.resolve.alias,
+    };
+    
+    // Add ignore-loader for pdf-parse test files
+    config.module.rules.push({
+      test: /node_modules\/pdf-parse\/test\//,
+      use: 'ignore-loader',
+    });
+
+    return config;
+  },
   async headers() {
     return [
       {
