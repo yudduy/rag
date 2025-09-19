@@ -26,6 +26,11 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.development.local
+.env.production.local
+.env.test.local
+.env.local
+.env
 
 # vercel
 .vercel
@@ -40,3 +45,17 @@ next-env.d.ts
 
 # One-time utility scripts with sensitive data
 scripts/create-missing-user.js
+
+# Security: Additional sensitive files
+*.key
+*.pem
+*.p12
+*.pfx
+*.crt
+*.cer
+*.der
+secrets.json
+config.json
+credentials.json
+.secrets
+.secret
