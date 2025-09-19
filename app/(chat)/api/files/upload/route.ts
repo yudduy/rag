@@ -15,7 +15,7 @@ const FileSchema = z.object({
     })
     .refine(
       (file) =>
-        ["image/jpeg", "image/png", "application/pdf"].includes(file.type),
+        ["image/jpeg", "image/png"].includes(file.type), // PDF temporarily disabled
       {
         message: "File type should be JPEG, PNG, or PDF",
       },

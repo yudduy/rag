@@ -10,7 +10,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = [
   "text/plain",
   "text/markdown", 
-  "application/pdf",
+  // "application/pdf", // Temporarily disabled to fix build issues
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
 ];
 
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
         errorDetails: {
           type: "validation",
           title: "Unsupported File Type",
-          message: `File type "${file.type}" is not supported. Please use TXT, MD, PDF, or DOCX files.`,
+          message: `File type "${file.type}" is not supported. Please use TXT, MD, or DOCX files. (PDF support temporarily disabled)`,
           details: {
             code: "UNSUPPORTED_FILE_TYPE",
             timestamp: new Date().toISOString(),

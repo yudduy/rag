@@ -5,17 +5,6 @@ const nextConfig = {
     remotePatterns: [],
   },
   webpack: (config, { isServer }) => {
-    // Ignore pdf-parse test files during build
-    config.resolve.alias = {
-      ...config.resolve.alias,
-    };
-    
-    // Add ignore-loader for pdf-parse test files
-    config.module.rules.push({
-      test: /node_modules\/pdf-parse\/test\//,
-      use: 'ignore-loader',
-    });
-
     // Optimize bundle size
     if (!isServer) {
       config.resolve.fallback = {
@@ -23,6 +12,7 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
+        canvas: false,
       };
     }
 

@@ -150,7 +150,7 @@ export function MultimodalInput({
   const uploadFile = useCallback(async (file: File) => {
     // Client-side validation
     if (!isValidFileType(file)) {
-      toast.error("Invalid file type. Please upload images (PNG, JPEG, GIF), PDFs, text files, or Office documents.");
+      toast.error("Invalid file type. Please upload images (PNG, JPEG, GIF), text files, or Office documents. (PDF temporarily disabled)");
       return;
     }
 

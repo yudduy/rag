@@ -3,13 +3,12 @@
  */
 
 import mammoth from "mammoth";
-import pdf from "pdf-parse";
 import { z } from "zod";
 
 export const SupportedFileTypes = {
   "text/plain": "txt",
   "text/markdown": "md", 
-  "application/pdf": "pdf",
+  // "application/pdf": "pdf", // Temporarily disabled to fix build issues
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
 } as const;
 
@@ -80,11 +79,10 @@ export class DocumentProcessor {
           content = buffer.toString("utf-8");
           break;
         
-        case "pdf":
-          const pdfData = await pdf(buffer);
-          content = pdfData.text;
-          pageCount = pdfData.numpages;
-          break;
+        // PDF support temporarily disabled to fix build issues
+        // case "pdf":
+        //   // PDF processing code will be added back with a different library
+        //   break;
         
         case "docx":
           const docxResult = await mammoth.extractRawText({ buffer });
@@ -201,7 +199,7 @@ export class DocumentProcessor {
     const typeMultipliers = {
       txt: 1,
       md: 1,
-      pdf: 3, // PDF parsing is more intensive
+      // pdf: 3, // PDF parsing temporarily disabled
       docx: 2, // DOCX parsing is moderately intensive
     };
     
