@@ -4,7 +4,7 @@ import { z } from "zod";
 import { randomUUID } from "crypto";
 import path from "path";
 
-export const runtime = "nodejs" as const;
+export const runtime = "nodejs";
 import { auth } from "@/app/(auth)/auth";
 
 const FileSchema = z.object({

@@ -6,7 +6,7 @@ import { getPineconeRAGCore } from "@/lib/pinecone-rag-core";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -15,7 +15,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documentId = params.id;
+    const { id: documentId } = await params;
     if (!documentId || typeof documentId !== "string") {
       return NextResponse.json({ error: "Invalid id" }, { status: 400 });
     }
@@ -54,7 +54,7 @@ export async function DELETE(
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Check authentication
@@ -63,7 +63,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const documentId = params.id;
+    const { id: documentId } = await params;
     
     // Validate document ID
     if (!documentId || typeof documentId !== "string") {
