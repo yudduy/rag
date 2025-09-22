@@ -11,7 +11,8 @@ export function SubmitButton({ children }: { children: React.ReactNode }) {
 
   return (
     <Button
-      type={pending ? "button" : "submit"}
+      type="submit" 
+      disabled={pending} 
       aria-disabled={pending}
       className="relative text-white"
     >
